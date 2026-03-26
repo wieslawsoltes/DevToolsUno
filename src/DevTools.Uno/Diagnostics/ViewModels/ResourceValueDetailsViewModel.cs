@@ -3,9 +3,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Controls.Selection;
-using IndexPath = Avalonia.Controls.IndexPath;
-using AGridLength = Avalonia.GridLength;
-using AGridUnitType = Avalonia.GridUnitType;
 using DevTools.Uno.Diagnostics.Internal;
 using Microsoft.UI.Xaml;
 
@@ -22,6 +19,7 @@ internal sealed class ResourceValueDetailsViewModel : ViewModelBase
     {
         _entry = entry;
         _includeClrProperties = includeClrProperties;
+        _entry.PropertyChanged += OnEntryPropertyChanged;
         Filter = new FilterViewModel();
         Filter.RefreshFilter += (_, _) => Refresh();
 
@@ -33,25 +31,8 @@ internal sealed class ResourceValueDetailsViewModel : ViewModelBase
             }
         }, () => SelectedProperty is not null);
 
-        var source = new HierarchicalTreeDataGridSource<PropertyGridNode>(Array.Empty<PropertyGridNode>());
-        source.Columns.Add(
-            new HierarchicalExpanderColumn<PropertyGridNode>(
-                new TextColumn<PropertyGridNode, string>("Property", x => x.Name, new AGridLength(2, AGridUnitType.Star)),
-                x => x.Children,
-                x => x.Children.Count > 0,
-                x => x.IsExpanded));
-        source.Columns.Add(new TextColumn<PropertyGridNode, string>("Value", x => x.ValueText, (row, value) => { row.ApplyValue(value); }, new AGridLength(2, AGridUnitType.Star)));
-        source.Columns.Add(new TextColumn<PropertyGridNode, string>("Type", x => x.TypeText, new AGridLength(1, AGridUnitType.Star)));
-        source.Columns.Add(new TextColumn<PropertyGridNode, string>("Priority", x => x.PriorityText, new AGridLength(1, AGridUnitType.Star)));
-        source.Columns.Add(new TextColumn<PropertyGridNode, string>("Source", x => x.SourceText, new AGridLength(1, AGridUnitType.Star)));
-
-        PropertySource = source;
-        Selection = new TreeDataGridRowSelectionModel<PropertyGridNode>(PropertySource)
-        {
-            SingleSelect = true,
-        };
-        Selection.SelectionChanged += (_, _) => SelectedProperty = Selection.SelectedItem;
-        PropertySource.Selection = Selection;
+        PropertySource = PropertyGridSourceBuilder.CreateSource();
+        Selection = PropertyGridSourceBuilder.CreateSelection(PropertySource, property => SelectedProperty = property);
         ValueSourceGrid = PropertyValueSourceGridBuilder.Create();
 
         Refresh();
@@ -114,7 +95,8 @@ internal sealed class ResourceValueDetailsViewModel : ViewModelBase
         var selectedFullName = SelectedProperty?.FullName;
         PropertySource.Items = BuildPropertyNodes().ToArray();
 
-        if (selectedFullName is not null && TryFind(PropertySource.Items, selectedFullName, out var path, out var node))
+        if (selectedFullName is not null &&
+            PropertyGridSourceBuilder.TryFindByFullName(PropertySource.Items, selectedFullName, out var path, out var node))
         {
             Selection.SelectedIndex = path;
             SelectedProperty = node;
@@ -167,6 +149,7 @@ internal sealed class ResourceValueDetailsViewModel : ViewModelBase
             IsGroup = true,
             IsEditable = false,
             FullName = $"RESOURCE-GROUP:{_entry.ResourceId}",
+            Editor = PropertyEditorMetadata.ReadOnly,
         };
 
         group.Children.Add(new PropertyGridNode
@@ -179,6 +162,7 @@ internal sealed class ResourceValueDetailsViewModel : ViewModelBase
             IsGroup = false,
             IsEditable = _entry.CanEditInline,
             FullName = $"RESOURCE:{_entry.ResourceId}",
+            Editor = PropertyInspector.GetEditorMetadata(_entry.ValueType, _entry.GetValue(), _entry.CanEditInline),
             TrySetValue = value => _entry.ApplyValue(value),
             GetSources = () =>
             [
@@ -207,10 +191,7 @@ internal sealed class ResourceValueDetailsViewModel : ViewModelBase
     }
 
     private void OnPropertyValueChanged()
-    {
-        _entry.RefreshFromOwner();
-        Refresh();
-    }
+        => _entry.RefreshFromOwner();
 
     private void ReloadSelectedSources()
     {
@@ -222,8 +203,14 @@ internal sealed class ResourceValueDetailsViewModel : ViewModelBase
         if (e.PropertyName is nameof(PropertyGridNode.ValueText) or nameof(PropertyGridNode.PriorityText))
         {
             _entry.RefreshFromOwner();
-            RaiseHeaderPropertiesChanged();
-            ReloadSelectedSources();
+        }
+    }
+
+    private void OnEntryPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(ResourceEntryViewModel.RawValue))
+        {
+            Refresh();
         }
     }
 
@@ -246,43 +233,4 @@ internal sealed class ResourceValueDetailsViewModel : ViewModelBase
                actualType == typeof(Guid);
     }
 
-    private static bool TryFind(IEnumerable<PropertyGridNode> roots, string fullName, out IndexPath path, out PropertyGridNode? node)
-    {
-        var index = 0;
-        foreach (var root in roots)
-        {
-            if (TryFind(root, fullName, new IndexPath(index), out path, out node))
-            {
-                return true;
-            }
-
-            index++;
-        }
-
-        path = default;
-        node = null;
-        return false;
-    }
-
-    private static bool TryFind(PropertyGridNode current, string fullName, IndexPath currentPath, out IndexPath path, out PropertyGridNode? node)
-    {
-        if (string.Equals(current.FullName, fullName, StringComparison.Ordinal))
-        {
-            path = currentPath;
-            node = current;
-            return true;
-        }
-
-        for (var index = 0; index < current.Children.Count; index++)
-        {
-            if (TryFind(current.Children[index], fullName, currentPath.Append(index), out path, out node))
-            {
-                return true;
-            }
-        }
-
-        path = default;
-        node = null;
-        return false;
-    }
 }

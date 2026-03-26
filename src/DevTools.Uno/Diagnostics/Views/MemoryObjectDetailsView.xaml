@@ -88,6 +88,14 @@
                           automation:AutomationProperties.Name="Memory object metadata">
                 <StackPanel Spacing="12">
                     <Border Style="{StaticResource DevToolsInspectorCardBorderStyle}">
+                        <StackPanel Spacing="8">
+                            <TextBlock Style="{StaticResource DevToolsSectionTitleTextStyle}" Text="Selected Property" />
+                            <ContentControl Content="{Binding SelectedProperty}"
+                                            ContentTemplate="{StaticResource SelectedPropertyEditorTemplate}" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource DevToolsInspectorCardBorderStyle}">
                         <StackPanel Spacing="4">
                             <TextBlock Style="{StaticResource DevToolsSectionTitleTextStyle}"
                                        Text="Object" />

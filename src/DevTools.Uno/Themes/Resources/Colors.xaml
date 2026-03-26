@@ -16,6 +16,10 @@
             <Color x:Key="DevToolsForegroundMutedColor">#FF374151</Color>
             <Color x:Key="DevToolsForegroundSubtleColor">#FF6B7280</Color>
             <Color x:Key="DevToolsForegroundCaptionColor">#FF9CA3AF</Color>
+            <Color x:Key="DevToolsValidationErrorColor">#FFDC2626</Color>
+            <Color x:Key="DevToolsValidationErrorSurfaceColor">#FFFEF2F2</Color>
+            <Color x:Key="DevToolsValidationWarningColor">#FFD97706</Color>
+            <Color x:Key="DevToolsValidationSuccessColor">#FF059669</Color>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Dark">
             <Color x:Key="DevToolsBackdropColor">#A0000000</Color>
@@ -31,6 +35,10 @@
             <Color x:Key="DevToolsForegroundMutedColor">#FFD4D4D8</Color>
             <Color x:Key="DevToolsForegroundSubtleColor">#FFA1A1AA</Color>
             <Color x:Key="DevToolsForegroundCaptionColor">#FF71717A</Color>
+            <Color x:Key="DevToolsValidationErrorColor">#FFF87171</Color>
+            <Color x:Key="DevToolsValidationErrorSurfaceColor">#FF311315</Color>
+            <Color x:Key="DevToolsValidationWarningColor">#FFFBBF24</Color>
+            <Color x:Key="DevToolsValidationSuccessColor">#FF34D399</Color>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 </ResourceDictionary>

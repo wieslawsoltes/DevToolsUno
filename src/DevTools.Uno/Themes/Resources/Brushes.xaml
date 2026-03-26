@@ -15,4 +15,8 @@
     <SolidColorBrush x:Key="DevToolsForegroundMutedBrush" Color="{ThemeResource DevToolsForegroundMutedColor}" />
     <SolidColorBrush x:Key="DevToolsForegroundSubtleBrush" Color="{ThemeResource DevToolsForegroundSubtleColor}" />
     <SolidColorBrush x:Key="DevToolsForegroundCaptionBrush" Color="{ThemeResource DevToolsForegroundCaptionColor}" />
+    <SolidColorBrush x:Key="DevToolsValidationErrorBrush" Color="{ThemeResource DevToolsValidationErrorColor}" />
+    <SolidColorBrush x:Key="DevToolsValidationErrorSurfaceBrush" Color="{ThemeResource DevToolsValidationErrorSurfaceColor}" />
+    <SolidColorBrush x:Key="DevToolsValidationWarningBrush" Color="{ThemeResource DevToolsValidationWarningColor}" />
+    <SolidColorBrush x:Key="DevToolsValidationSuccessBrush" Color="{ThemeResource DevToolsValidationSuccessColor}" />
 </ResourceDictionary>
