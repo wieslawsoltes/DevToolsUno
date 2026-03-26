@@ -12,15 +12,19 @@ using Microsoft.UI.Xaml.Media;
 
 namespace DevTools.Uno.Diagnostics.ViewModels;
 
-internal sealed class TreePageViewModel : ViewModelBase
+internal sealed class TreePageViewModel : ViewModelBase, IDisposable
 {
+    private static readonly TimeSpan AutoRefreshDelay = TimeSpan.FromMilliseconds(250);
+
     private readonly FrameworkElement _root;
     private readonly MainViewModel _mainView;
     private readonly bool _isVisualTree;
+    private readonly DispatcherTimer _autoRefreshTimer;
     private InspectableNode? _hoveredNode;
     private InspectableNode? _selectedNode;
     private ControlDetailsViewModel? _details;
     private bool _suppressMainViewNotification;
+    private int _lastTreeSignature;
 
     public TreePageViewModel(MainViewModel mainView, FrameworkElement root, bool isVisualTree, ISet<string> pinnedProperties)
     {
@@ -28,6 +32,11 @@ internal sealed class TreePageViewModel : ViewModelBase
         _root = root;
         _isVisualTree = isVisualTree;
         PinnedProperties = pinnedProperties;
+        _autoRefreshTimer = new DispatcherTimer
+        {
+            Interval = AutoRefreshDelay,
+        };
+        _autoRefreshTimer.Tick += OnAutoRefreshTick;
 
         SelectRootCommand = new RelayCommand(Refresh);
         CopySelectorCommand = new RelayCommand(async () =>
@@ -121,17 +130,21 @@ internal sealed class TreePageViewModel : ViewModelBase
 
     public void Refresh()
     {
-        var selected = SelectedNode?.Element;
+        var state = CaptureRefreshState();
         TreeSource.Items = (_isVisualTree ? TreeInspector.BuildVisualTree(_root) : TreeInspector.BuildLogicalTree(_root)).ToArray();
-        if (_hoveredNode is not null && !ContainsElement(_hoveredNode.Element))
+        if (state.HasExpansionState)
         {
-            ClearHoveredNode();
+            RestoreExpandedState(state.ExpandedElements);
         }
+        RestoreHoveredState(state.HoveredElement);
+        RestoreSelectionState(state.SelectedLineage);
+        _lastTreeSignature = GetTreeSignature();
+    }
 
-        if (selected is not null)
-        {
-            SelectElement(selected, activateTab: false);
-        }
+    public void RequestAutoRefresh()
+    {
+        _autoRefreshTimer.Stop();
+        _autoRefreshTimer.Start();
     }
 
     public void UpdateIncludeClrProperties(bool includeClrProperties)
@@ -164,7 +177,30 @@ internal sealed class TreePageViewModel : ViewModelBase
     public bool ContainsElement(DependencyObject element)
         => TryFind(TreeSource.Items, element, out _, out _);
 
-    public bool SelectElement(DependencyObject? element, bool activateTab = true, bool notifyMainView = true)
+    public bool SelectElement(DependencyObject? element, bool activateTab = true, bool notifyMainView = true, bool refreshIfMissing = false)
+    {
+        if (TrySelectElementCore(element, activateTab, notifyMainView))
+        {
+            return true;
+        }
+
+        if (!refreshIfMissing || element is null)
+        {
+            return false;
+        }
+
+        Refresh();
+        return TrySelectElementCore(element, activateTab, notifyMainView);
+    }
+
+    public void Dispose()
+    {
+        _autoRefreshTimer.Stop();
+        _autoRefreshTimer.Tick -= OnAutoRefreshTick;
+        ClearHoveredNode();
+    }
+
+    private bool TrySelectElementCore(DependencyObject? element, bool activateTab, bool notifyMainView)
     {
         if (element is null)
         {
@@ -195,6 +231,90 @@ internal sealed class TreePageViewModel : ViewModelBase
 
         return false;
     }
+
+    private TreeRefreshState CaptureRefreshState()
+        => new(
+            TreeSource.Items.Any(),
+            HierarchyExpansionState.CaptureExpandedKeys<InspectableNode, DependencyObject>(
+                TreeSource.Items,
+                x => x.Children,
+                x => x.Element,
+                x => x.IsExpanded,
+                (IEqualityComparer<DependencyObject>)System.Collections.Generic.ReferenceEqualityComparer.Instance),
+            CaptureSelectionLineage(),
+            _hoveredNode?.Element);
+
+    private List<DependencyObject> CaptureSelectionLineage()
+    {
+        var lineage = new List<DependencyObject>();
+        for (var current = SelectedNode; current is not null; current = current.Parent)
+        {
+            lineage.Add(current.Element);
+        }
+
+        return lineage;
+    }
+
+    private void RestoreExpandedState(ISet<DependencyObject> expandedElements)
+        => HierarchyExpansionState.RestoreExpandedKeys(
+            TreeSource.Items,
+            x => x.Children,
+            x => x.Element,
+            (node, isExpanded) => node.IsExpanded = isExpanded,
+            expandedElements);
+
+    private void RestoreHoveredState(DependencyObject? hoveredElement)
+    {
+        if (hoveredElement is not null &&
+            TryFind(TreeSource.Items, hoveredElement, out _, out var hoveredNode))
+        {
+            UpdateHoveredNode(hoveredNode);
+            return;
+        }
+
+        ClearHoveredNode();
+    }
+
+    private void RestoreSelectionState(IReadOnlyList<DependencyObject> selectedLineage)
+    {
+        if (selectedLineage.Count == 0)
+        {
+            return;
+        }
+
+        if (TrySelectElementCore(selectedLineage[0], activateTab: false, notifyMainView: false))
+        {
+            return;
+        }
+
+        for (var index = 1; index < selectedLineage.Count; index++)
+        {
+            if (TrySelectElementCore(selectedLineage[index], activateTab: false, notifyMainView: true))
+            {
+                return;
+            }
+        }
+
+        Selection.SelectedIndex = default;
+        SelectedNode = null;
+        _mainView.OnTreeSelectionChanged(this, null);
+    }
+
+    private void OnAutoRefreshTick(object? sender, object e)
+    {
+        _autoRefreshTimer.Stop();
+
+        var signature = GetTreeSignature();
+        if (signature != _lastTreeSignature)
+        {
+            Refresh();
+        }
+    }
+
+    private int GetTreeSignature()
+        => _isVisualTree
+            ? TreeInspector.GetVisualTreeSignature(_root)
+            : TreeInspector.GetLogicalTreeSignature(_root);
 
     private void ExpandRecursively()
     {
@@ -301,4 +421,10 @@ internal sealed class TreePageViewModel : ViewModelBase
         node = null;
         return false;
     }
+
+    private sealed record TreeRefreshState(
+        bool HasExpansionState,
+        HashSet<DependencyObject> ExpandedElements,
+        List<DependencyObject> SelectedLineage,
+        DependencyObject? HoveredElement);
 }

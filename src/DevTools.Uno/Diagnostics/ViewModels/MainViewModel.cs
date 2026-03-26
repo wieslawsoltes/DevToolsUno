@@ -285,7 +285,7 @@ internal sealed class MainViewModel : ViewModelBase, IDisposable
         _isSynchronizingTreeSelection = true;
         try
         {
-            counterpart.SelectElement(element, activateTab: false, notifyMainView: false);
+            counterpart.SelectElement(element, activateTab: false, notifyMainView: false, refreshIfMissing: true);
         }
         finally
         {
@@ -308,15 +308,15 @@ internal sealed class MainViewModel : ViewModelBase, IDisposable
         {
             if (preferVisualTree)
             {
-                var visualSelected = _visualTree.SelectElement(resolved, activateTab: activatePreferredTree, notifyMainView: false);
-                var logicalSelected = _logicalTree.SelectElement(resolved, activateTab: false, notifyMainView: false);
+                var visualSelected = _visualTree.SelectElement(resolved, activateTab: activatePreferredTree, notifyMainView: false, refreshIfMissing: true);
+                var logicalSelected = _logicalTree.SelectElement(resolved, activateTab: false, notifyMainView: false, refreshIfMissing: true);
                 primarySource = visualSelected || !logicalSelected ? _visualTree : _logicalTree;
                 selectedAny = visualSelected || logicalSelected;
             }
             else
             {
-                var logicalSelected = _logicalTree.SelectElement(resolved, activateTab: activatePreferredTree, notifyMainView: false);
-                var visualSelected = _visualTree.SelectElement(resolved, activateTab: false, notifyMainView: false);
+                var logicalSelected = _logicalTree.SelectElement(resolved, activateTab: activatePreferredTree, notifyMainView: false, refreshIfMissing: true);
+                var visualSelected = _visualTree.SelectElement(resolved, activateTab: false, notifyMainView: false, refreshIfMissing: true);
                 primarySource = logicalSelected || !visualSelected ? _logicalTree : _visualTree;
                 selectedAny = logicalSelected || visualSelected;
             }
@@ -354,6 +354,8 @@ internal sealed class MainViewModel : ViewModelBase, IDisposable
     public void Dispose()
     {
         _root.LayoutUpdated -= OnRootLayoutUpdated;
+        _logicalTree.Dispose();
+        _visualTree.Dispose();
         _events.Dispose();
         _memory.Dispose();
     }
@@ -370,6 +372,8 @@ internal sealed class MainViewModel : ViewModelBase, IDisposable
     private void OnRootLayoutUpdated(object? sender, object e)
     {
         RefreshPopupState();
+        _logicalTree.RequestAutoRefresh();
+        _visualTree.RequestAutoRefresh();
     }
 
     private void RefreshPopupState()

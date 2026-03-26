@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Runtime.CompilerServices;
 using DevTools.Uno.Diagnostics.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -43,6 +44,32 @@ internal static class TreeInspector
 
         PopulateLogicalChildren(top, root, isRoot: true);
         return [top];
+    }
+
+    public static int GetVisualTreeSignature(FrameworkElement root)
+    {
+        var hash = new HashCode();
+        var attachedPopups = new HashSet<DependencyObject>(System.Collections.Generic.ReferenceEqualityComparer.Instance);
+
+        AccumulateVisualSignature(ref hash, root, attachedPopups);
+
+        foreach (var popupChild in GetOpenPopupChildren(root.XamlRoot))
+        {
+            if (attachedPopups.Add(popupChild))
+            {
+                AccumulateVisualSignature(ref hash, popupChild, attachedPopups);
+            }
+        }
+
+        return hash.ToHashCode();
+    }
+
+    public static int GetLogicalTreeSignature(FrameworkElement root)
+    {
+        var hash = new HashCode();
+        var visited = new HashSet<DependencyObject>(System.Collections.Generic.ReferenceEqualityComparer.Instance);
+        AccumulateLogicalSignature(ref hash, root, isRoot: true, visited);
+        return hash.ToHashCode();
     }
 
     public static IReadOnlyList<DependencyObject> GetOpenPopupChildren(XamlRoot? xamlRoot)
@@ -179,6 +206,54 @@ internal static class TreeInspector
         }
 
         return result;
+    }
+
+    private static void AccumulateVisualSignature(ref HashCode hash, DependencyObject element, ISet<DependencyObject> attachedPopups)
+    {
+        hash.Add(RuntimeHelpers.GetHashCode(element));
+
+        var count = VisualTreeHelper.GetChildrenCount(element);
+        hash.Add(count);
+
+        for (var index = 0; index < count; index++)
+        {
+            if (VisualTreeHelper.GetChild(element, index) is DependencyObject child)
+            {
+                AccumulateVisualSignature(ref hash, child, attachedPopups);
+            }
+        }
+
+        if (element is FrameworkElement fe && fe.XamlRoot is not null)
+        {
+            foreach (var popup in VisualTreeHelper.GetOpenPopupsForXamlRoot(fe.XamlRoot))
+            {
+                if (popup.Child is null || popup.Parent != element || !attachedPopups.Add(popup.Child))
+                {
+                    continue;
+                }
+
+                AccumulateVisualSignature(ref hash, popup.Child, attachedPopups);
+            }
+        }
+    }
+
+    private static void AccumulateLogicalSignature(ref HashCode hash, DependencyObject element, bool isRoot, ISet<DependencyObject> visited)
+    {
+        if (!visited.Add(element))
+        {
+            hash.Add(RuntimeHelpers.GetHashCode(element));
+            return;
+        }
+
+        hash.Add(RuntimeHelpers.GetHashCode(element));
+
+        var children = GetLogicalChildren(element, isRoot);
+        hash.Add(children.Count);
+
+        foreach (var child in children)
+        {
+            AccumulateLogicalSignature(ref hash, child, isRoot: false, visited);
+        }
     }
 
     private static object? GetPropertyValue(object instance, string name)
