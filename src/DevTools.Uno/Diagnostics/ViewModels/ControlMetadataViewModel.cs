@@ -1,3 +1,4 @@
+using DevTools.Uno.Diagnostics.Internal;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
@@ -16,6 +17,7 @@ internal sealed class ControlMetadataViewModel : ViewModelBase
     private string _toolTip = string.Empty;
     private string _interaction = string.Empty;
     private string _xamlRoot = string.Empty;
+    private string _popupSurfaces = string.Empty;
     private string _popupState = string.Empty;
 
     public string Selector
@@ -66,6 +68,12 @@ internal sealed class ControlMetadataViewModel : ViewModelBase
         private set => RaiseAndSetIfChanged(ref _xamlRoot, value);
     }
 
+    public string PopupSurfaces
+    {
+        get => _popupSurfaces;
+        private set => RaiseAndSetIfChanged(ref _popupSurfaces, value);
+    }
+
     public string PopupState
     {
         get => _popupState;
@@ -84,12 +92,14 @@ internal sealed class ControlMetadataViewModel : ViewModelBase
             ToolTip = string.Empty;
             Interaction = string.Empty;
             XamlRoot = string.Empty;
+            PopupSurfaces = string.Empty;
             PopupState = string.Empty;
             return;
         }
 
         Selector = InspectableNode.BuildSelector(element);
         State = InspectableNode.BuildStateSummary(element);
+        PopupSurfaces = PopupSurfaceInspector.BuildSurfaceSummary(element);
         PopupState = FindOwningPopup(element) is { } popup ? BuildPopupState(popup) : "(none)";
 
         if (element is FrameworkElement fe)

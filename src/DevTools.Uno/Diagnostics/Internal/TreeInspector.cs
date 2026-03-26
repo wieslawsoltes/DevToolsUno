@@ -20,14 +20,14 @@ internal static class TreeInspector
         var attachedPopups = new HashSet<DependencyObject>();
         PopulateVisualChildren(top, root, attachedPopups);
 
-        foreach (var popupChild in GetOpenPopupChildren(root.XamlRoot))
+        foreach (var popup in GetOpenPopups(root.XamlRoot))
         {
-            if (!attachedPopups.Add(popupChild))
+            if (popup.Child is not DependencyObject popupChild || !attachedPopups.Add(popupChild))
             {
                 continue;
             }
 
-            var node = new InspectableNode(popupChild, top, isVisualTree: true);
+            var node = CreateVisualPopupNode(popup, popupChild, top);
             top.Children.Add(node);
             PopulateVisualChildren(node, popupChild, attachedPopups);
         }
@@ -42,7 +42,11 @@ internal static class TreeInspector
             IsExpanded = true,
         };
 
-        PopulateLogicalChildren(top, root, isRoot: true);
+        var visited = new HashSet<DependencyObject>(System.Collections.Generic.ReferenceEqualityComparer.Instance)
+        {
+            root,
+        };
+        PopulateLogicalChildren(top, root, visited, isRoot: true);
         return [top];
     }
 
@@ -72,65 +76,27 @@ internal static class TreeInspector
         return hash.ToHashCode();
     }
 
-    public static IReadOnlyList<DependencyObject> GetOpenPopupChildren(XamlRoot? xamlRoot)
+    public static IReadOnlyList<Popup> GetOpenPopups(XamlRoot? xamlRoot)
     {
         if (xamlRoot is null)
         {
             return [];
         }
 
-        return VisualTreeHelper
-            .GetOpenPopupsForXamlRoot(xamlRoot)
+        return VisualTreeHelper.GetOpenPopupsForXamlRoot(xamlRoot).ToArray();
+    }
+
+    public static IReadOnlyList<DependencyObject> GetOpenPopupChildren(XamlRoot? xamlRoot)
+        => GetOpenPopups(xamlRoot)
             .Select(x => x.Child)
             .Where(x => x is not null)
             .Cast<DependencyObject>()
             .ToArray();
-    }
 
-    private static void PopulateVisualChildren(InspectableNode parent, DependencyObject element, ISet<DependencyObject> attachedPopups)
-    {
-        var count = VisualTreeHelper.GetChildrenCount(element);
-
-        for (var index = 0; index < count; index++)
-        {
-            if (VisualTreeHelper.GetChild(element, index) is not DependencyObject child)
-            {
-                continue;
-            }
-
-            var node = new InspectableNode(child, parent, isVisualTree: true);
-            parent.Children.Add(node);
-            PopulateVisualChildren(node, child, attachedPopups);
-        }
-
-        if (element is FrameworkElement fe && fe.XamlRoot is not null)
-        {
-            foreach (var popup in VisualTreeHelper.GetOpenPopupsForXamlRoot(fe.XamlRoot))
-            {
-                if (popup.Child is not null && popup.Parent == element && attachedPopups.Add(popup.Child))
-                {
-                    var node = new InspectableNode(popup.Child, parent, isVisualTree: true);
-                    parent.Children.Add(node);
-                    PopulateVisualChildren(node, popup.Child, attachedPopups);
-                }
-            }
-        }
-    }
-
-    private static void PopulateLogicalChildren(InspectableNode parent, DependencyObject element, bool isRoot = false)
-    {
-        foreach (var child in GetLogicalChildren(element, isRoot))
-        {
-            var node = new InspectableNode(child, parent, isVisualTree: false);
-            parent.Children.Add(node);
-            PopulateLogicalChildren(node, child);
-        }
-    }
-
-    private static IReadOnlyList<DependencyObject> GetLogicalChildren(DependencyObject element, bool isRoot)
+    internal static IReadOnlyList<DependencyObject> GetLogicalChildren(DependencyObject element, bool isRoot)
     {
         var result = new List<DependencyObject>();
-        var seen = new HashSet<DependencyObject>();
+        var seen = new HashSet<DependencyObject>(System.Collections.Generic.ReferenceEqualityComparer.Instance);
 
         void Add(object? value)
         {
@@ -139,8 +105,8 @@ internal static class TreeInspector
                 case null:
                 case string:
                     return;
-                case DependencyObject d when seen.Add(d):
-                    result.Add(d);
+                case DependencyObject dependencyObject when seen.Add(dependencyObject):
+                    result.Add(dependencyObject);
                     break;
                 case System.Collections.IEnumerable enumerable:
                     foreach (var item in enumerable)
@@ -178,22 +144,11 @@ internal static class TreeInspector
         {
             Add(GetPropertyValue(fe, "Header"));
             Add(GetPropertyValue(fe, "Footer"));
-            Add(ToolTipService.GetToolTip(fe));
-            Add(FlyoutBase.GetAttachedFlyout(fe));
-
-            if (isRoot && fe.XamlRoot is not null)
-            {
-                foreach (var popupChild in GetOpenPopupChildren(fe.XamlRoot))
-                {
-                    Add(popupChild);
-                }
-            }
         }
 
-        if (element is UIElement uiElement &&
-            uiElement.ReadLocalValue(UIElement.ContextFlyoutProperty) != DependencyProperty.UnsetValue)
+        foreach (var surface in PopupSurfaceInspector.GetAttachedSurfaces(element))
         {
-            Add(uiElement.ContextFlyout);
+            Add(surface.Surface);
         }
 
         if (result.Count == 0)
@@ -206,6 +161,55 @@ internal static class TreeInspector
         }
 
         return result;
+    }
+
+    private static void PopulateVisualChildren(InspectableNode parent, DependencyObject element, ISet<DependencyObject> attachedPopups)
+    {
+        var count = VisualTreeHelper.GetChildrenCount(element);
+
+        for (var index = 0; index < count; index++)
+        {
+            if (VisualTreeHelper.GetChild(element, index) is not DependencyObject child)
+            {
+                continue;
+            }
+
+            var node = new InspectableNode(child, parent, isVisualTree: true);
+            parent.Children.Add(node);
+            PopulateVisualChildren(node, child, attachedPopups);
+        }
+
+        if (element is FrameworkElement fe && fe.XamlRoot is not null)
+        {
+            foreach (var popup in GetOpenPopups(fe.XamlRoot))
+            {
+                if (popup.Child is not DependencyObject popupChild ||
+                    (!ReferenceEquals(popup.Parent, element) && !ReferenceEquals(popup.PlacementTarget, element)) ||
+                    !attachedPopups.Add(popupChild))
+                {
+                    continue;
+                }
+
+                var node = CreateVisualPopupNode(popup, popupChild, parent);
+                parent.Children.Add(node);
+                PopulateVisualChildren(node, popupChild, attachedPopups);
+            }
+        }
+    }
+
+    private static void PopulateLogicalChildren(InspectableNode parent, DependencyObject element, ISet<DependencyObject> visited, bool isRoot = false)
+    {
+        foreach (var child in GetLogicalChildren(element, isRoot))
+        {
+            if (!visited.Add(child))
+            {
+                continue;
+            }
+
+            var node = CreateLogicalNode(element, child, parent);
+            parent.Children.Add(node);
+            PopulateLogicalChildren(node, child, visited);
+        }
     }
 
     private static void AccumulateVisualSignature(ref HashCode hash, DependencyObject element, ISet<DependencyObject> attachedPopups)
@@ -225,9 +229,11 @@ internal static class TreeInspector
 
         if (element is FrameworkElement fe && fe.XamlRoot is not null)
         {
-            foreach (var popup in VisualTreeHelper.GetOpenPopupsForXamlRoot(fe.XamlRoot))
+            foreach (var popup in GetOpenPopups(fe.XamlRoot))
             {
-                if (popup.Child is null || popup.Parent != element || !attachedPopups.Add(popup.Child))
+                if (popup.Child is null ||
+                    (!ReferenceEquals(popup.Parent, element) && !ReferenceEquals(popup.PlacementTarget, element)) ||
+                    !attachedPopups.Add(popup.Child))
                 {
                     continue;
                 }
@@ -249,6 +255,12 @@ internal static class TreeInspector
 
         var children = GetLogicalChildren(element, isRoot);
         hash.Add(children.Count);
+        foreach (var surface in PopupSurfaceInspector.GetAttachedSurfaces(element))
+        {
+            hash.Add(surface.Label);
+            hash.Add(RuntimeHelpers.GetHashCode(surface.Surface));
+            hash.Add(surface.IsOpen);
+        }
 
         foreach (var child in children)
         {
@@ -258,4 +270,16 @@ internal static class TreeInspector
 
     private static object? GetPropertyValue(object instance, string name)
         => instance.GetType().GetProperty(name)?.GetValue(instance);
+
+    private static InspectableNode CreateLogicalNode(DependencyObject owner, DependencyObject child, InspectableNode parent)
+    {
+        PopupSurfaceInspector.TryDescribeAttachedSurface(owner, child, out var displayTypeName, out var displayQualifier);
+        return new InspectableNode(child, parent, isVisualTree: false, displayTypeName, displayQualifier);
+    }
+
+    private static InspectableNode CreateVisualPopupNode(Popup popup, DependencyObject child, InspectableNode parent)
+    {
+        PopupSurfaceInspector.TryDescribePopupChild(popup, child, out var displayTypeName, out var displayQualifier);
+        return new InspectableNode(child, parent, isVisualTree: true, displayTypeName, displayQualifier);
+    }
 }

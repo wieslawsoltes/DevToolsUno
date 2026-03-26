@@ -366,94 +366,13 @@ internal static class MemoryInspector
             }
 
             count++;
-            foreach (var child in GetLogicalChildren(current, includeOpenPopups && isRoot))
+            foreach (var child in TreeInspector.GetLogicalChildren(current, includeOpenPopups && isRoot))
             {
                 queue.Enqueue((child, false));
             }
         }
 
         return count;
-    }
-
-    private static IReadOnlyList<DependencyObject> GetLogicalChildren(DependencyObject element, bool includeOpenPopupsForRoot)
-    {
-        var result = new List<DependencyObject>();
-        var seen = new HashSet<DependencyObject>(ReferenceEqualityComparer.Instance);
-
-        void Add(object? value)
-        {
-            switch (value)
-            {
-                case null:
-                case string:
-                    return;
-                case DependencyObject dependencyObject when seen.Add(dependencyObject):
-                    result.Add(dependencyObject);
-                    break;
-                case System.Collections.IEnumerable enumerable:
-                    foreach (var item in enumerable)
-                    {
-                        Add(item);
-                    }
-
-                    break;
-            }
-        }
-
-        switch (element)
-        {
-            case Panel panel:
-                Add(panel.Children);
-                break;
-            case Border border:
-                Add(border.Child);
-                break;
-            case ContentControl contentControl:
-                Add(contentControl.Content);
-                break;
-            case ContentPresenter presenter:
-                Add(presenter.Content);
-                break;
-            case ItemsControl itemsControl:
-                Add(itemsControl.ItemsPanelRoot);
-                break;
-            case Popup popup:
-                Add(popup.Child);
-                break;
-        }
-
-        if (element is FrameworkElement frameworkElement)
-        {
-            Add(GetPropertyValue(frameworkElement, "Header"));
-            Add(GetPropertyValue(frameworkElement, "Footer"));
-            Add(ToolTipService.GetToolTip(frameworkElement));
-            Add(FlyoutBase.GetAttachedFlyout(frameworkElement));
-
-            if (includeOpenPopupsForRoot && frameworkElement.XamlRoot is not null)
-            {
-                foreach (var popupChild in TreeInspector.GetOpenPopupChildren(frameworkElement.XamlRoot))
-                {
-                    Add(popupChild);
-                }
-            }
-        }
-
-        if (element is UIElement uiElement &&
-            uiElement.ReadLocalValue(UIElement.ContextFlyoutProperty) != DependencyProperty.UnsetValue)
-        {
-            Add(uiElement.ContextFlyout);
-        }
-
-        if (result.Count == 0)
-        {
-            var visualCount = VisualTreeHelper.GetChildrenCount(element);
-            for (var index = 0; index < visualCount; index++)
-            {
-                Add(VisualTreeHelper.GetChild(element, index));
-            }
-        }
-
-        return result;
     }
 
     private static string DescribeDependencyObject(DependencyObject value)
@@ -464,9 +383,6 @@ internal static class MemoryInspector
             _ => value.GetType().Name,
         };
     }
-
-    private static object? GetPropertyValue(object instance, string name)
-        => instance.GetType().GetProperty(name)?.GetValue(instance);
 
     private static T SafeRead<T>(Func<T> getter)
     {

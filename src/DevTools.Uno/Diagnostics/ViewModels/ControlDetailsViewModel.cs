@@ -11,14 +11,27 @@ namespace DevTools.Uno.Diagnostics.ViewModels;
 internal sealed class ControlDetailsViewModel : ViewModelBase
 {
     private readonly ISet<string> _pinnedProperties;
+    private readonly string _selectedElementName;
+    private readonly string _selectedElementType;
     private bool _includeClrProperties;
     private PropertyGridNode? _selectedProperty;
 
-    public ControlDetailsViewModel(DependencyObject element, ISet<string> pinnedProperties, bool includeClrProperties)
+    public ControlDetailsViewModel(
+        DependencyObject element,
+        ISet<string> pinnedProperties,
+        bool includeClrProperties,
+        string? selectedElementName = null,
+        string? selectedElementType = null)
     {
         Element = element;
         _pinnedProperties = pinnedProperties;
         _includeClrProperties = includeClrProperties;
+        _selectedElementName = string.IsNullOrWhiteSpace(selectedElementName)
+            ? (element is FrameworkElement fe && !string.IsNullOrWhiteSpace(fe.Name) ? fe.Name : element.GetType().Name)
+            : selectedElementName;
+        _selectedElementType = string.IsNullOrWhiteSpace(selectedElementType)
+            ? element.GetType().FullName ?? element.GetType().Name
+            : selectedElementType;
         Layout = new ControlLayoutViewModel(Refresh);
         Metadata = new ControlMetadataViewModel();
         Filter = new FilterViewModel();
@@ -42,9 +55,9 @@ internal sealed class ControlDetailsViewModel : ViewModelBase
 
     public DependencyObject Element { get; }
 
-    public string SelectedElementName => Element is FrameworkElement fe && !string.IsNullOrWhiteSpace(fe.Name) ? fe.Name : "(unnamed)";
+    public string SelectedElementName => _selectedElementName;
 
-    public string SelectedElementType => Element.GetType().FullName ?? Element.GetType().Name;
+    public string SelectedElementType => _selectedElementType;
 
     public FilterViewModel Filter { get; }
 

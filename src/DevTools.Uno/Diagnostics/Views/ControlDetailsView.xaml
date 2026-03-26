@@ -124,6 +124,10 @@
                                 <TextBlock Foreground="{ThemeResource DevToolsForegroundMutedBrush}" Text="{Binding Metadata.ToolTip}" TextWrapping="WrapWholeWords" />
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Spacing="4">
+                                <TextBlock Foreground="{ThemeResource DevToolsForegroundCaptionBrush}" Text="Popup Surfaces:" />
+                                <TextBlock Foreground="{ThemeResource DevToolsForegroundMutedBrush}" Text="{Binding Metadata.PopupSurfaces}" TextWrapping="WrapWholeWords" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="4">
                                 <TextBlock Foreground="{ThemeResource DevToolsForegroundCaptionBrush}" Text="Interaction:" />
                                 <TextBlock Foreground="{ThemeResource DevToolsForegroundMutedBrush}" Text="{Binding Metadata.Interaction}" TextWrapping="WrapWholeWords" />
                             </StackPanel>
