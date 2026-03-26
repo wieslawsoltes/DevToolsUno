@@ -95,9 +95,17 @@ internal sealed class ControlDetailsViewModel : ViewModelBase
     public void Refresh()
     {
         var selectedFullName = SelectedProperty?.FullName;
+        var hadPropertyState = PropertySource.Items.Any();
+        var expandedFullNames = hadPropertyState
+            ? PropertyGridSourceBuilder.CaptureExpandedFullNames(PropertySource.Items)
+            : new HashSet<string>(StringComparer.Ordinal);
         Layout.Update(Element);
         Metadata.Update(Element);
         PropertySource.Items = PropertyInspector.BuildPropertyTree(Element, _pinnedProperties, _includeClrProperties, Filter).ToArray();
+        if (hadPropertyState)
+        {
+            PropertyGridSourceBuilder.RestoreExpandedFullNames(PropertySource.Items, expandedFullNames);
+        }
 
         if (selectedFullName is not null &&
             PropertyGridSourceBuilder.TryFindByFullName(PropertySource.Items, selectedFullName, out var path, out var node))

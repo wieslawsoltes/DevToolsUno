@@ -197,12 +197,30 @@ internal sealed class AssetsPageViewModel : ViewModelBase
         StatusText = "Loading assets…";
 
         var previousFolder = SelectedFolder?.RelativePath;
+        var hadFolderState = FolderTreeSource.Items.Any();
+        var expandedFolderPaths = hadFolderState
+            ? HierarchyExpansionState.CaptureExpandedKeys(
+                FolderTreeSource.Items,
+                x => x.Children,
+                x => string.IsNullOrWhiteSpace(x.RelativePath) ? null : x.RelativePath,
+                x => x.IsExpanded,
+                StringComparer.Ordinal)
+            : new HashSet<string>(StringComparer.Ordinal);
         _pendingAssetRestorePath = SelectedAsset?.RelativePath;
 
         try
         {
             _rootNode = await AssetInspector.BuildFolderTreeAsync();
             FolderTreeSource.Items = [_rootNode];
+            if (hadFolderState)
+            {
+                HierarchyExpansionState.RestoreExpandedKeys(
+                    FolderTreeSource.Items,
+                    x => x.Children,
+                    x => string.IsNullOrWhiteSpace(x.RelativePath) ? null : x.RelativePath,
+                    (node, isExpanded) => node.IsExpanded = isExpanded,
+                    expandedFolderPaths);
+            }
 
             if (previousFolder is not null &&
                 TryFindFolder(FolderTreeSource.Items, previousFolder, out var folderIndex, out var folder))

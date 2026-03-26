@@ -59,6 +59,22 @@ internal static class PropertyGridSourceBuilder
         return selection;
     }
 
+    public static HashSet<string> CaptureExpandedFullNames(IEnumerable<PropertyGridNode> roots)
+        => HierarchyExpansionState.CaptureExpandedKeys(
+            roots,
+            x => x.Children,
+            x => string.IsNullOrWhiteSpace(x.FullName) ? null : x.FullName,
+            x => x.IsExpanded,
+            StringComparer.Ordinal);
+
+    public static void RestoreExpandedFullNames(IEnumerable<PropertyGridNode> roots, ISet<string> expandedFullNames)
+        => HierarchyExpansionState.RestoreExpandedKeys(
+            roots,
+            x => x.Children,
+            x => string.IsNullOrWhiteSpace(x.FullName) ? null : x.FullName,
+            (node, isExpanded) => node.IsExpanded = isExpanded,
+            expandedFullNames);
+
     public static bool TryFindByFullName(
         IEnumerable<PropertyGridNode> roots,
         string fullName,

@@ -109,7 +109,15 @@ internal sealed class BindingObjectDetailsViewModel : ViewModelBase
     public void Refresh()
     {
         var selectedFullName = SelectedProperty?.FullName;
+        var hadPropertyState = PropertySource.Items.Any();
+        var expandedFullNames = hadPropertyState
+            ? PropertyGridSourceBuilder.CaptureExpandedFullNames(PropertySource.Items)
+            : new HashSet<string>(StringComparer.Ordinal);
         PropertySource.Items = BuildPropertyNodes().ToArray();
+        if (hadPropertyState)
+        {
+            PropertyGridSourceBuilder.RestoreExpandedFullNames(PropertySource.Items, expandedFullNames);
+        }
 
         if (selectedFullName is not null &&
             PropertyGridSourceBuilder.TryFindByFullName(PropertySource.Items, selectedFullName, out var path, out var node))

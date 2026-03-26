@@ -191,8 +191,26 @@ internal sealed class ResourcesPageViewModel : ViewModelBase
     public void Refresh()
     {
         var previousProviderPath = SelectedProvider?.Path;
+        var hadProviderState = ProviderTreeSource.Items.Any();
+        var expandedProviderPaths = hadProviderState
+            ? HierarchyExpansionState.CaptureExpandedKeys(
+                ProviderTreeSource.Items,
+                x => x.Children,
+                x => string.IsNullOrWhiteSpace(x.Path) ? null : x.Path,
+                x => x.IsExpanded,
+                StringComparer.Ordinal)
+            : new HashSet<string>(StringComparer.Ordinal);
         _pendingResourceRestoreId = SelectedResource?.ResourceId;
         ProviderTreeSource.Items = ResourceInspector.BuildProviderTree(_root, _inspectionTarget).ToArray();
+        if (hadProviderState)
+        {
+            HierarchyExpansionState.RestoreExpandedKeys(
+                ProviderTreeSource.Items,
+                x => x.Children,
+                x => string.IsNullOrWhiteSpace(x.Path) ? null : x.Path,
+                (node, isExpanded) => node.IsExpanded = isExpanded,
+                expandedProviderPaths);
+        }
 
         if (previousProviderPath is not null &&
             TryFindProvider(ProviderTreeSource.Items, previousProviderPath, out var restoredPath, out var restoredNode))

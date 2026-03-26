@@ -182,9 +182,27 @@ internal sealed class StylesPageViewModel : ViewModelBase
     public void Refresh()
     {
         var previousScopePath = SelectedScope?.Path;
+        var hadScopeState = ScopeTreeSource.Items.Any();
+        var expandedScopePaths = hadScopeState
+            ? HierarchyExpansionState.CaptureExpandedKeys(
+                ScopeTreeSource.Items,
+                x => x.Children,
+                x => string.IsNullOrWhiteSpace(x.Path) ? null : x.Path,
+                x => x.IsExpanded,
+                StringComparer.Ordinal)
+            : new HashSet<string>(StringComparer.Ordinal);
         _pendingEntryRestoreId = SelectedEntry?.EntryId;
         _snapshot = StyleInspector.BuildSnapshot(_root, _inspectionTarget);
         ScopeTreeSource.Items = _snapshot.Nodes.ToArray();
+        if (hadScopeState)
+        {
+            HierarchyExpansionState.RestoreExpandedKeys(
+                ScopeTreeSource.Items,
+                x => x.Children,
+                x => string.IsNullOrWhiteSpace(x.Path) ? null : x.Path,
+                (node, isExpanded) => node.IsExpanded = isExpanded,
+                expandedScopePaths);
+        }
 
         RaisePropertyChanged(nameof(InspectionTargetSummary));
 
