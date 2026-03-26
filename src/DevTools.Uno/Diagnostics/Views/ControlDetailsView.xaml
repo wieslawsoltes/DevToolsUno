@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:automation="using:Microsoft.UI.Xaml.Automation"
     xmlns:controls="using:Avalonia.Controls"
+    xmlns:views="using:DevTools.Uno.Diagnostics.Views"
     automation:AutomationProperties.Name="Control details">
     <Grid x:Name="LayoutRoot"
           MinHeight="0"
@@ -138,36 +139,9 @@
                     </Border>
 
                     <Border Style="{StaticResource DevToolsInspectorCardBorderStyle}">
-                        <StackPanel Spacing="4">
+                        <StackPanel Spacing="8">
                             <TextBlock Style="{StaticResource DevToolsSectionTitleTextStyle}" Text="Layout" />
-                            <StackPanel Orientation="Horizontal" Spacing="4">
-                                <TextBlock Foreground="{ThemeResource DevToolsForegroundCaptionBrush}" Text="Actual:" />
-                                <TextBlock Foreground="{ThemeResource DevToolsForegroundMutedBrush}" Text="{Binding Layout.ActualSize}" />
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Spacing="4">
-                                <TextBlock Foreground="{ThemeResource DevToolsForegroundCaptionBrush}" Text="Slot:" />
-                                <TextBlock Foreground="{ThemeResource DevToolsForegroundMutedBrush}" Text="{Binding Layout.LayoutSlot}" />
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Spacing="4">
-                                <TextBlock Foreground="{ThemeResource DevToolsForegroundCaptionBrush}" Text="Margin:" />
-                                <TextBlock Foreground="{ThemeResource DevToolsForegroundMutedBrush}" Text="{Binding Layout.Margin}" />
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Spacing="4">
-                                <TextBlock Foreground="{ThemeResource DevToolsForegroundCaptionBrush}" Text="Padding:" />
-                                <TextBlock Foreground="{ThemeResource DevToolsForegroundMutedBrush}" Text="{Binding Layout.Padding}" />
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Spacing="4">
-                                <TextBlock Foreground="{ThemeResource DevToolsForegroundCaptionBrush}" Text="Alignment:" />
-                                <TextBlock Foreground="{ThemeResource DevToolsForegroundMutedBrush}" Text="{Binding Layout.Alignment}" />
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Spacing="4">
-                                <TextBlock Foreground="{ThemeResource DevToolsForegroundCaptionBrush}" Text="Visibility:" />
-                                <TextBlock Foreground="{ThemeResource DevToolsForegroundMutedBrush}" Text="{Binding Layout.Visibility}" />
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Spacing="4">
-                                <TextBlock Foreground="{ThemeResource DevToolsForegroundCaptionBrush}" Text="Opacity:" />
-                                <TextBlock Foreground="{ThemeResource DevToolsForegroundMutedBrush}" Text="{Binding Layout.Opacity}" />
-                            </StackPanel>
+                            <views:LayoutExplorerView DataContext="{Binding Layout}" />
                         </StackPanel>
                     </Border>
 

@@ -1,0 +1,263 @@
+<UserControl
+    x:Class="DevTools.Uno.Diagnostics.Views.LayoutExplorerView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:automation="using:Microsoft.UI.Xaml.Automation"
+    xmlns:views="using:DevTools.Uno.Diagnostics.Views"
+    automation:AutomationProperties.Name="Layout explorer">
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="LayoutMarginBrush" Color="#D78965" />
+        <SolidColorBrush x:Key="LayoutBorderBrush" Color="#E3C381" />
+        <SolidColorBrush x:Key="LayoutPaddingBrush" Color="#B8C47F" />
+        <SolidColorBrush x:Key="LayoutContentBrush" Color="#88B2BD" />
+    </UserControl.Resources>
+
+    <StackPanel Spacing="12">
+        <Grid ColumnSpacing="8" RowSpacing="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Border
+                Padding="10,8"
+                Background="{ThemeResource DevToolsSurfaceMutedBrush}"
+                BorderBrush="{ThemeResource DevToolsBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="8">
+                <StackPanel Spacing="2">
+                    <TextBlock Style="{StaticResource DevToolsCaptionTextStyle}" Text="Actual size" />
+                    <TextBlock Style="{StaticResource DevToolsSectionTitleTextStyle}" Text="{Binding ActualSize}" />
+                </StackPanel>
+            </Border>
+
+            <Border
+                Grid.Column="1"
+                Padding="10,8"
+                Background="{ThemeResource DevToolsSurfaceMutedBrush}"
+                BorderBrush="{ThemeResource DevToolsBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="8">
+                <StackPanel Spacing="2">
+                    <TextBlock Style="{StaticResource DevToolsCaptionTextStyle}" Text="Content size" />
+                    <TextBlock Style="{StaticResource DevToolsSectionTitleTextStyle}" Text="{Binding ContentSize}" />
+                </StackPanel>
+            </Border>
+
+            <Border
+                Grid.Row="1"
+                Padding="10,8"
+                Background="{ThemeResource DevToolsSurfaceMutedBrush}"
+                BorderBrush="{ThemeResource DevToolsBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="8">
+                <StackPanel Spacing="2">
+                    <TextBlock Style="{StaticResource DevToolsCaptionTextStyle}" Text="Width constraints" />
+                    <TextBlock Style="{StaticResource DevToolsBodyTextStyle}" Text="{Binding WidthConstraint}" />
+                </StackPanel>
+            </Border>
+
+            <Border
+                Grid.Row="1"
+                Grid.Column="1"
+                Padding="10,8"
+                Background="{ThemeResource DevToolsSurfaceMutedBrush}"
+                BorderBrush="{ThemeResource DevToolsBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="8">
+                <StackPanel Spacing="2">
+                    <TextBlock Style="{StaticResource DevToolsCaptionTextStyle}" Text="Height constraints" />
+                    <TextBlock Style="{StaticResource DevToolsBodyTextStyle}" Text="{Binding HeightConstraint}" />
+                </StackPanel>
+            </Border>
+
+            <Border
+                Grid.Row="2"
+                Padding="10,8"
+                Background="{ThemeResource DevToolsSurfaceMutedBrush}"
+                BorderBrush="{ThemeResource DevToolsBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="8">
+                <StackPanel Spacing="2">
+                    <TextBlock Style="{StaticResource DevToolsCaptionTextStyle}" Text="Layout slot" />
+                    <TextBlock Style="{StaticResource DevToolsBodyTextStyle}" Text="{Binding LayoutSlot}" />
+                </StackPanel>
+            </Border>
+
+            <Border
+                Grid.Row="2"
+                Grid.Column="1"
+                Padding="10,8"
+                Background="{ThemeResource DevToolsSurfaceMutedBrush}"
+                BorderBrush="{ThemeResource DevToolsBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="8">
+                <StackPanel Spacing="2">
+                    <TextBlock Style="{StaticResource DevToolsCaptionTextStyle}" Text="Element state" />
+                    <TextBlock Style="{StaticResource DevToolsBodyTextStyle}" Text="{Binding Visibility}" />
+                    <TextBlock Style="{StaticResource DevToolsCaptionTextStyle}" Text="Opacity" />
+                    <TextBlock Style="{StaticResource DevToolsMetaTextStyle}" Text="{Binding Opacity}" />
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <Border
+            Padding="12"
+            Background="{ThemeResource DevToolsSurfaceSubtleBrush}"
+            BorderBrush="{ThemeResource DevToolsBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="10">
+            <StackPanel Spacing="10">
+                <TextBlock Style="{StaticResource DevToolsSectionTitleTextStyle}" Text="Box model" />
+
+                <Viewbox StretchDirection="DownOnly">
+                    <Border
+                        MinWidth="240"
+                        Background="{StaticResource LayoutMarginBrush}"
+                        CornerRadius="16"
+                        Padding="{Binding MarginVisualizerThickness}">
+                        <StackPanel Spacing="8">
+                            <Grid ColumnSpacing="8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Style="{StaticResource DevToolsCaptionTextStyle}" Text="Margin" />
+                                <TextBlock
+                                    Grid.Column="1"
+                                    Style="{StaticResource DevToolsBodyTextStyle}"
+                                    Text="{Binding MarginSummary}" />
+                            </Grid>
+
+                            <Border
+                                Background="{StaticResource LayoutBorderBrush}"
+                                CornerRadius="12"
+                                Padding="{Binding BorderVisualizerThickness}">
+                                <StackPanel Spacing="8">
+                                    <Grid ColumnSpacing="8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Style="{StaticResource DevToolsCaptionTextStyle}" Text="Border" />
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            Style="{StaticResource DevToolsBodyTextStyle}"
+                                            Text="{Binding BorderSummary}" />
+                                    </Grid>
+
+                                    <Border
+                                        Background="{StaticResource LayoutPaddingBrush}"
+                                        CornerRadius="10"
+                                        Padding="{Binding PaddingVisualizerThickness}">
+                                        <StackPanel Spacing="8">
+                                            <Grid ColumnSpacing="8">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Style="{StaticResource DevToolsCaptionTextStyle}" Text="Padding" />
+                                                <TextBlock
+                                                    Grid.Column="1"
+                                                    Style="{StaticResource DevToolsBodyTextStyle}"
+                                                    Text="{Binding PaddingSummary}" />
+                                            </Grid>
+
+                                            <Border
+                                                MinWidth="120"
+                                                MinHeight="72"
+                                                Padding="16"
+                                                Background="{StaticResource LayoutContentBrush}"
+                                                CornerRadius="8">
+                                                <StackPanel
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    Spacing="4">
+                                                    <TextBlock
+                                                        HorizontalAlignment="Center"
+                                                        Style="{StaticResource DevToolsCaptionTextStyle}"
+                                                        Text="Content" />
+                                                    <TextBlock
+                                                        HorizontalAlignment="Center"
+                                                        Style="{StaticResource DevToolsSectionTitleTextStyle}"
+                                                        Text="{Binding ContentSize}" />
+                                                </StackPanel>
+                                            </Border>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+                </Viewbox>
+            </StackPanel>
+        </Border>
+
+        <Grid ColumnSpacing="8" RowSpacing="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <StackPanel Spacing="4">
+                <TextBlock Style="{StaticResource DevToolsCaptionTextStyle}" Text="Margin" />
+                <views:PropertyValueEditorPresenter
+                    Property="{Binding MarginEditor}"
+                    ShowValidationMessage="True" />
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Spacing="4">
+                <TextBlock Style="{StaticResource DevToolsCaptionTextStyle}" Text="Padding" />
+                <views:PropertyValueEditorPresenter
+                    Property="{Binding PaddingEditor}"
+                    ShowValidationMessage="True" />
+            </StackPanel>
+
+            <StackPanel Grid.Row="1" Spacing="4">
+                <TextBlock Style="{StaticResource DevToolsCaptionTextStyle}" Text="Border thickness" />
+                <views:PropertyValueEditorPresenter
+                    Property="{Binding BorderThicknessEditor}"
+                    ShowValidationMessage="True" />
+            </StackPanel>
+
+            <StackPanel Grid.Row="1" Grid.Column="1" Spacing="4">
+                <TextBlock Style="{StaticResource DevToolsCaptionTextStyle}" Text="Horizontal alignment" />
+                <views:PropertyValueEditorPresenter
+                    Property="{Binding HorizontalAlignmentEditor}"
+                    ShowValidationMessage="True" />
+            </StackPanel>
+
+            <StackPanel Grid.Row="2" Spacing="4">
+                <TextBlock Style="{StaticResource DevToolsCaptionTextStyle}" Text="Vertical alignment" />
+                <views:PropertyValueEditorPresenter
+                    Property="{Binding VerticalAlignmentEditor}"
+                    ShowValidationMessage="True" />
+            </StackPanel>
+
+            <Border
+                Grid.Row="2"
+                Grid.Column="1"
+                Padding="10,8"
+                Background="{ThemeResource DevToolsSurfaceMutedBrush}"
+                BorderBrush="{ThemeResource DevToolsBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="8">
+                <StackPanel Spacing="4">
+                    <TextBlock Style="{StaticResource DevToolsCaptionTextStyle}" Text="Current alignment" />
+                    <TextBlock Style="{StaticResource DevToolsBodyTextStyle}" Text="{Binding Alignment}" />
+                    <TextBlock Style="{StaticResource DevToolsCaptionTextStyle}" Text="Inspector updates immediately after edits." />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </StackPanel>
+</UserControl>
