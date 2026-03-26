@@ -11,7 +11,7 @@ internal sealed class HotKeyPageViewModel : ViewModelBase
 {
     public ObservableCollection<HotKeyEntry> Entries { get; } = [];
 
-    public string SummaryText => "Keyboard accelerators, access keys, and the DevTools launch gesture discovered in the current inspection root.";
+    public string SummaryText => "DevTools internal gestures plus keyboard accelerators and access keys discovered in the current inspection root.";
 
     public string EntryCountText => Entries.Count == 1 ? "1 gesture discovered." : $"{Entries.Count} gestures discovered.";
 
@@ -20,9 +20,27 @@ internal sealed class HotKeyPageViewModel : ViewModelBase
         Entries.Clear();
         Entries.Add(new HotKeyEntry
         {
-            Element = "DevTools",
+            Element = "Launch DevTools",
             Gesture = FormatGesture(options.Gesture, options.GestureModifiers),
-            Scope = "Launch gesture",
+            Scope = "DevTools",
+        });
+        Entries.Add(new HotKeyEntry
+        {
+            Element = "Inspect hovered control",
+            Gesture = FormatGesture(options.HotKeys.InspectHoveredControl),
+            Scope = "DevTools",
+        });
+        Entries.Add(new HotKeyEntry
+        {
+            Element = "Toggle popup freeze",
+            Gesture = FormatGesture(options.HotKeys.TogglePopupFreeze),
+            Scope = "DevTools",
+        });
+        Entries.Add(new HotKeyEntry
+        {
+            Element = "Save selected control screenshot",
+            Gesture = FormatGesture(options.HotKeys.ScreenshotSelectedControl),
+            Scope = "DevTools",
         });
 
         foreach (var element in Enumerate(root))
@@ -124,7 +142,14 @@ internal sealed class HotKeyPageViewModel : ViewModelBase
             parts.Add("Meta");
         }
 
-        parts.Add(key.ToString());
+        if (key != VirtualKey.None)
+        {
+            parts.Add(key.ToString());
+        }
+
         return string.Join("+", parts);
     }
+
+    public static string FormatGesture(DevToolsHotKeyGesture gesture)
+        => FormatGesture(gesture.Key, gesture.Modifiers);
 }

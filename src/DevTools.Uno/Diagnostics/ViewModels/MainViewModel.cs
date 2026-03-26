@@ -1,7 +1,10 @@
 using DevTools.Uno.Diagnostics.Internal;
+using DevTools.Uno.Diagnostics.Screenshots;
+using Uno.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 using Windows.Storage;
+using Windows.System;
 
 namespace DevTools.Uno.Diagnostics.ViewModels;
 
@@ -29,6 +32,7 @@ internal sealed class MainViewModel : ViewModelBase, IDisposable
     private bool _showFps;
     private bool _freezePopups;
     private bool _showClrProperties = true;
+    private string _statusText = "Ready.";
     private int _knownPopupCount = -1;
     private bool _isSynchronizingTreeSelection;
     private object? _hoverOwner;
@@ -126,6 +130,14 @@ internal sealed class MainViewModel : ViewModelBase, IDisposable
         private set => RaiseAndSetIfChanged(ref _treeHoverElement, value);
     }
 
+    public string StatusText
+    {
+        get => _statusText;
+        private set => RaiseAndSetIfChanged(ref _statusText, value);
+    }
+
+    public string InspectInstructionText => BuildInspectInstructionText(_options.HotKeys.InspectHoveredControl);
+
     public bool ShowMarginPadding
     {
         get => _showMarginPadding;
@@ -170,6 +182,7 @@ internal sealed class MainViewModel : ViewModelBase, IDisposable
             if (RaiseAndSetIfChanged(ref _freezePopups, value))
             {
                 ApplyPopupFreeze(value);
+                StatusText = value ? "Popup freeze enabled." : "Popup freeze disabled.";
             }
         }
     }
@@ -188,38 +201,35 @@ internal sealed class MainViewModel : ViewModelBase, IDisposable
 
     public async Task CaptureSelectionAsync()
     {
-        var element = CurrentTree?.SelectedNode?.Element as FrameworkElement;
+        var element = GetSelectedScreenshotElement();
         if (element is null)
         {
+            StatusText = "Select an element in the logical or visual tree before saving a screenshot.";
             return;
         }
 
         try
         {
-            var folder = _options.ScreenshotFolder ?? ApplicationData.Current.TemporaryFolder;
-            var file = await folder.CreateFileAsync($"devtools-{DateTime.Now:yyyyMMdd-HHmmssfff}.png", CreationCollisionOption.GenerateUniqueName);
-            var renderer = new Microsoft.UI.Xaml.Media.Imaging.RenderTargetBitmap();
-            await renderer.RenderAsync(element);
-            if (renderer.PixelWidth <= 0 || renderer.PixelHeight <= 0)
+            var suggestedName = $"devtools-{DateTime.Now:yyyyMMdd-HHmmssfff}";
+            var result = await ResolveScreenshotHandler().CaptureAsync(element, suggestedName, ResolveOwnerWindow());
+            if (result.Succeeded && result.File is { } file)
             {
+                StatusText = $"Saved screenshot to {DescribeFile(file)}.";
                 return;
             }
 
-            var pixels = await renderer.GetPixelsAsync();
-
-            using var stream = await file.OpenAsync(FileAccessMode.ReadWrite);
-            var encoder = await Windows.Graphics.Imaging.BitmapEncoder.CreateAsync(Windows.Graphics.Imaging.BitmapEncoder.PngEncoderId, stream);
-            encoder.SetSoftwareBitmap(Windows.Graphics.Imaging.SoftwareBitmap.CreateCopyFromBuffer(
-                pixels,
-                Windows.Graphics.Imaging.BitmapPixelFormat.Bgra8,
-                renderer.PixelWidth,
-                renderer.PixelHeight));
-            await encoder.FlushAsync();
+            StatusText = result.IsCanceled
+                ? "Screenshot save canceled."
+                : "Screenshot was not saved.";
         }
-        catch
+        catch (Exception ex)
         {
+            StatusText = $"Screenshot failed: {ex.GetBaseException().Message}";
         }
     }
+
+    public void TogglePopupFreeze()
+        => FreezePopups = !FreezePopups;
 
     public void UpdatePointerOver(DependencyObject? element)
     {
@@ -393,7 +403,62 @@ internal sealed class MainViewModel : ViewModelBase, IDisposable
         _ => null,
     };
 
+    private FrameworkElement? GetSelectedScreenshotElement()
+        => CurrentTree?.SelectedNode?.Element as FrameworkElement
+           ?? _visualTree.SelectedNode?.Element as FrameworkElement
+           ?? _logicalTree.SelectedNode?.Element as FrameworkElement;
+
     private void RefreshCurrentDetails() => CurrentTree?.Details?.Refresh();
+
+    private IScreenshotHandler ResolveScreenshotHandler()
+    {
+        if (_options.ScreenshotHandler is { } handler)
+        {
+            return handler;
+        }
+
+        if (_options.ScreenshotFolder is { } folder)
+        {
+            return new FolderScreenshotHandler(folder);
+        }
+
+        return new FileSavePickerScreenshotHandler();
+    }
+
+    private Window? ResolveOwnerWindow()
+    {
+        foreach (var window in ApplicationHelper.Windows)
+        {
+            if (ReferenceEquals(window.Content, _root))
+            {
+                return window;
+            }
+        }
+
+        if (Window.Current?.Content is FrameworkElement currentRoot &&
+            ReferenceEquals(currentRoot, _root))
+        {
+            return Window.Current;
+        }
+
+        return null;
+    }
+
+    private static string DescribeFile(StorageFile file)
+        => string.IsNullOrWhiteSpace(file.Path) ? file.Name : file.Path;
+
+    private static string BuildInspectInstructionText(DevToolsHotKeyGesture gesture)
+    {
+        var formatted = HotKeyPageViewModel.FormatGesture(gesture);
+        if (string.IsNullOrWhiteSpace(formatted))
+        {
+            return "Hover a control to inspect.";
+        }
+
+        return gesture.Key == VirtualKey.None
+            ? $"Hold {formatted} over a control to inspect."
+            : $"Press {formatted} while hovering a control to inspect.";
+    }
 
     private void OnRootLayoutUpdated(object? sender, object e)
     {

@@ -86,6 +86,7 @@ internal static class DevTools
         private readonly PointerEventHandler _pointerExitedHandler;
         private readonly TypedEventHandler<FrameworkElement, object> _actualThemeChangedHandler;
         private readonly KeyboardAccelerator? _launchAccelerator;
+        private readonly HashSet<VirtualKey> _pressedKeys = [];
         private Popup? _popup;
         private Grid? _popupHost;
         private Border? _popupShell;
@@ -252,10 +253,17 @@ internal static class DevTools
         private void OnPreviewKeyDown(object sender, KeyRoutedEventArgs e)
         {
             _activeModifiers |= GetModifier(e.Key);
+            var isFirstPress = _pressedKeys.Add(e.Key);
 
-            if (MatchesLaunchGesture(e.Key) && TryBeginLaunchGesture())
+            if (isFirstPress && MatchesLaunchGesture(e.Key) && TryBeginLaunchGesture())
             {
                 Toggle();
+                e.Handled = true;
+                return;
+            }
+
+            if (isFirstPress && TryHandleInternalHotKey(e.Key))
+            {
                 e.Handled = true;
             }
         }
@@ -263,6 +271,7 @@ internal static class DevTools
         private void OnKeyUp(object sender, KeyRoutedEventArgs e)
         {
             _activeModifiers &= ~GetModifier(e.Key);
+            _pressedKeys.Remove(e.Key);
             if (e.Key == _options.Gesture)
             {
                 _launchGesturePressed = false;
@@ -284,7 +293,7 @@ internal static class DevTools
         }
 
         private bool MatchesLaunchGesture(VirtualKey key)
-            => key == _options.Gesture && _activeModifiers == _options.GestureModifiers;
+            => key == _options.Gesture && GetCurrentModifiers() == _options.GestureModifiers;
 
         private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
         {
@@ -381,12 +390,13 @@ internal static class DevTools
                 return false;
             }
 
-            var ctrlDown = _activeModifiers.HasFlag(VirtualKeyModifiers.Control) ||
-                           InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
-            var shiftDown = _activeModifiers.HasFlag(VirtualKeyModifiers.Shift) ||
-                            InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
+            var gesture = _options.HotKeys.InspectHoveredControl;
+            if (GetCurrentModifiers() != gesture.Modifiers)
+            {
+                return false;
+            }
 
-            return ctrlDown && shiftDown;
+            return gesture.Key == VirtualKey.None || _pressedKeys.Contains(gesture.Key);
         }
 
         private bool TryBeginLaunchGesture()
@@ -398,6 +408,55 @@ internal static class DevTools
 
             _launchGesturePressed = true;
             return true;
+        }
+
+        private bool TryHandleInternalHotKey(VirtualKey key)
+        {
+            if (MatchesHotKey(key, _options.HotKeys.TogglePopupFreeze))
+            {
+                _viewModel.TogglePopupFreeze();
+                return true;
+            }
+
+            if (MatchesHotKey(key, _options.HotKeys.ScreenshotSelectedControl))
+            {
+                _ = _viewModel.CaptureSelectionAsync();
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool MatchesHotKey(VirtualKey key, DevToolsHotKeyGesture gesture)
+            => gesture.Key != VirtualKey.None &&
+               key == gesture.Key &&
+               GetCurrentModifiers() == gesture.Modifiers;
+
+        private VirtualKeyModifiers GetCurrentModifiers()
+        {
+            var modifiers = _activeModifiers;
+            if (InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down))
+            {
+                modifiers |= VirtualKeyModifiers.Control;
+            }
+
+            if (InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down))
+            {
+                modifiers |= VirtualKeyModifiers.Shift;
+            }
+
+            if (InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Menu).HasFlag(CoreVirtualKeyStates.Down))
+            {
+                modifiers |= VirtualKeyModifiers.Menu;
+            }
+
+            if (InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.LeftWindows).HasFlag(CoreVirtualKeyStates.Down) ||
+                InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.RightWindows).HasFlag(CoreVirtualKeyStates.Down))
+            {
+                modifiers |= VirtualKeyModifiers.Windows;
+            }
+
+            return modifiers;
         }
 
         private void EnsurePopupHost()

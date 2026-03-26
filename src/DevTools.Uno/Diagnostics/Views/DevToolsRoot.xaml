@@ -120,7 +120,7 @@
                             Spacing="12"
                             automation:AutomationProperties.Name="Diagnostics status">
                     <TextBlock Style="{StaticResource DevToolsBodyTextStyle}"
-                               Text="Hold Ctrl+Shift over a control to inspect." />
+                               Text="{Binding InspectInstructionText}" />
                     <TextBlock Style="{StaticResource DevToolsCaptionTextStyle}" Text="Focused:" />
                     <TextBlock Foreground="{ThemeResource DevToolsForegroundBrush}" Text="{Binding FocusedControl}" />
                     <TextBlock Style="{StaticResource DevToolsCaptionTextStyle}" Text="Pointer Over:" />
@@ -134,6 +134,11 @@
                     <TextBlock MaxWidth="520"
                                Foreground="{ThemeResource DevToolsForegroundBrush}"
                                Text="{Binding InspectionTarget}"
+                               TextTrimming="CharacterEllipsis" />
+                    <TextBlock Style="{StaticResource DevToolsCaptionTextStyle}" Text="Status:" />
+                    <TextBlock MaxWidth="520"
+                               Foreground="{ThemeResource DevToolsForegroundBrush}"
+                               Text="{Binding StatusText}"
                                TextTrimming="CharacterEllipsis" />
                 </StackPanel>
             </Border>
