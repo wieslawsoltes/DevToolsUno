@@ -1,0 +1,4 @@
+[submodule "external/Avalonia.Controls.TreeDataGrid"]
+	path = external/Avalonia.Controls.TreeDataGrid
+	url = https://github.com/wieslawsoltes/TreeDataGrid.git
+	branch = feat/uno-treedatagrid-port

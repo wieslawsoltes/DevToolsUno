@@ -3,8 +3,14 @@
     <TargetFramework>net9.0</TargetFramework>
     <RootNamespace>DevTools.Uno</RootNamespace>
     <PackageId>DevTools.Uno</PackageId>
+    <Title>DevTools.Uno</Title>
+    <Description>In-app diagnostics tooling for Uno Platform applications with visual and logical tree inspection, bindings, resources, styles, events, assets, screenshots, and memory analysis.</Description>
+    <PackageTags>uno;uno-platform;winui;devtools;diagnostics;debugging;xaml;bindings;inspection</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <IsPackable>true</IsPackable>
     <GenerateLibraryLayout>true</GenerateLibraryLayout>
     <UseUnoXamlParser>true</UseUnoXamlParser>
+    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeBundledProjectReferenceOutputs</TargetsForTfmSpecificBuildOutput>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,7 +19,21 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../../Avalonia.Controls.TreeDataGrid/src/TreeDataGrid.Uno/TreeDataGrid.Uno.csproj" />
+    <ProjectReference Include="../../external/Avalonia.Controls.TreeDataGrid/src/TreeDataGrid.Uno/TreeDataGrid.Uno.csproj"
+                      PrivateAssets="all"
+                      SetConfiguration="Configuration=$(Configuration)"
+                      AdditionalProperties="Configuration=$(Configuration)" />
+  </ItemGroup>
+
+  <!-- Bundle the Uno TreeDataGrid port into the package so consumers only install DevTools.Uno. -->
+  <ItemGroup>
+    <BundledProjectReference Include="../../external/Avalonia.Controls.TreeDataGrid/src/TreeDataGrid.Uno/TreeDataGrid.Uno.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="../../README.md"
+          Pack="true"
+          PackagePath="/" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,4 +46,23 @@
   <ItemGroup>
     <UpToDateCheckInput Include="**/*.xaml" Exclude="bin/**/*.xaml;obj/**/*.xaml" />
   </ItemGroup>
+
+  <Target Name="BuildBundledProjectReferences">
+    <MSBuild Projects="@(BundledProjectReference)"
+             Targets="Build"
+             Properties="Configuration=$(Configuration);ContinuousIntegrationBuild=$(ContinuousIntegrationBuild)"
+             BuildInParallel="true" />
+  </Target>
+
+  <Target Name="IncludeBundledProjectReferenceOutputs" DependsOnTargets="BuildBundledProjectReferences">
+    <MSBuild Projects="@(BundledProjectReference)"
+             Targets="GetTargetPath"
+             Properties="Configuration=$(Configuration)">
+      <Output TaskParameter="TargetOutputs" ItemName="_BundledProjectReferenceOutput" />
+    </MSBuild>
+
+    <ItemGroup>
+      <BuildOutputInPackage Include="@(_BundledProjectReferenceOutput)" />
+    </ItemGroup>
+  </Target>
 </Project>

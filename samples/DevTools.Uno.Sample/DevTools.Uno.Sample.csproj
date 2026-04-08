@@ -3,6 +3,7 @@
     <TargetFramework></TargetFramework>
     <TargetFrameworks>net9.0-desktop</TargetFrameworks>
     <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
     <UnoSingleProject>true</UnoSingleProject>
     <MSBuildEnableWorkloadResolver>true</MSBuildEnableWorkloadResolver>
     <RootNamespace>DevTools.Uno.Sample</RootNamespace>
