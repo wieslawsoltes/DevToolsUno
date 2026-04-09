@@ -43,10 +43,10 @@ jobs:
           echo "Building version: $VERSION (prerelease: $IS_PRERELEASE)"
 
       - name: Restore
-        run: dotnet restore DevTools.Uno.sln
+        run: dotnet restore src/DevTools.Uno/DevTools.Uno.csproj
 
       - name: Build
-        run: dotnet build DevTools.Uno.sln -c Release --no-restore -p:ContinuousIntegrationBuild=true
+        run: dotnet build src/DevTools.Uno/DevTools.Uno.csproj -c Release --no-restore -p:ContinuousIntegrationBuild=true
 
   pack:
     name: Pack Release
@@ -64,10 +64,10 @@ jobs:
           global-json-file: global.json
 
       - name: Restore
-        run: dotnet restore DevTools.Uno.sln
+        run: dotnet restore src/DevTools.Uno/DevTools.Uno.csproj
 
       - name: Build
-        run: dotnet build DevTools.Uno.sln -c Release --no-restore -p:ContinuousIntegrationBuild=true
+        run: dotnet build src/DevTools.Uno/DevTools.Uno.csproj -c Release --no-restore -p:ContinuousIntegrationBuild=true
 
       - name: Pack
         run: |
