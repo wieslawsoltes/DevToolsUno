@@ -13,6 +13,10 @@
     <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeBundledProjectReferenceOutputs</TargetsForTfmSpecificBuildOutput>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(NoBuild)' == 'true'">
+    <BuildProjectReferences>false</BuildProjectReferences>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Uno.WinUI" Version="$(UnoVersion)" />
     <PackageReference Include="System.Reactive" Version="5.0.0" />
@@ -47,7 +51,7 @@
     <UpToDateCheckInput Include="**/*.xaml" Exclude="bin/**/*.xaml;obj/**/*.xaml" />
   </ItemGroup>
 
-  <Target Name="BuildBundledProjectReferences">
+  <Target Name="BuildBundledProjectReferences" Condition="'$(NoBuild)' != 'true'">
     <MSBuild Projects="@(BundledProjectReference)"
              Targets="Build"
              Properties="Configuration=$(Configuration);ContinuousIntegrationBuild=$(ContinuousIntegrationBuild)"
