@@ -29,7 +29,7 @@ Install from NuGet:
 dotnet add package DevToolsUno
 ```
 
-The package targets `net9.0` and is intended for Uno Platform applications built on `Uno.WinUI` 6.5.x.
+The package targets `net9.0` and is intended for [Uno Platform](https://github.com/unoplatform) applications built on `Uno.WinUI` 6.5.x.
 
 ## Quick Start
 
