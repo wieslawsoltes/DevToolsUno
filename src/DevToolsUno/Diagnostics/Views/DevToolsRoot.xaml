@@ -21,47 +21,53 @@
                     BorderThickness="0,0,0,1"
                     BorderBrush="{ThemeResource DevToolsBorderBrush}"
                     CornerRadius="{ThemeResource DevToolsChromeHeaderCornerRadius}">
-                <Grid ColumnSpacing="16">
+                <Grid ColumnSpacing="12">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <StackPanel Spacing="12">
+                    <StackPanel Spacing="8">
                         <StackPanel Spacing="4">
                             <TextBlock Style="{StaticResource DevToolsShellTitleTextStyle}"
                                        Text="DevToolsUno" />
                             <TextBlock Style="{StaticResource DevToolsBodyTextStyle}"
-                                       Text="Inspect trees, resources, assets, styles, bindings, events, and runtime state with one coherent tool window." />
+                                       Text="Inspect trees, resources, assets, styles, bindings, events, and runtime state." />
                         </StackPanel>
 
-                        <StackPanel Orientation="Horizontal"
-                                    Spacing="8"
-                                    VerticalAlignment="Center">
-                            <Button Command="{Binding RefreshCommand}"
-                                    Content="Refresh"
-                                    automation:AutomationProperties.Name="Refresh diagnostics data" />
-                            <ToggleButton IsChecked="{Binding ShowMarginPadding, Mode=TwoWay}"
-                                          Command="{Binding ToggleMarginPaddingCommand}"
-                                          Content="Margin/Padding"
-                                          automation:AutomationProperties.Name="Toggle margin and padding overlay" />
-                            <ToggleButton IsChecked="{Binding ShowFocusHighlighter, Mode=TwoWay}"
-                                          Command="{Binding ToggleFocusHighlightCommand}"
-                                          Content="Focus"
-                                          automation:AutomationProperties.Name="Toggle focus overlay" />
-                            <ToggleButton IsChecked="{Binding ShowFps, Mode=TwoWay}"
-                                          Command="{Binding ToggleFpsCommand}"
-                                          Content="FPS"
-                                          automation:AutomationProperties.Name="Toggle frames per second display" />
-                            <ToggleButton IsChecked="{Binding FreezePopups, Mode=TwoWay}"
-                                          Command="{Binding ToggleFreezePopupsCommand}"
-                                          Content="Freeze Popups"
-                                          automation:AutomationProperties.Name="Toggle popup freezing" />
-                            <ToggleButton IsChecked="{Binding ShowClrProperties, Mode=TwoWay}"
-                                          Command="{Binding ToggleClrPropertiesCommand}"
-                                          Content="CLR Properties"
-                                          automation:AutomationProperties.Name="Toggle CLR properties display" />
-                        </StackPanel>
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                      HorizontalScrollMode="Enabled"
+                                      VerticalScrollBarVisibility="Disabled"
+                                      VerticalScrollMode="Disabled"
+                                      ZoomMode="Disabled">
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="8"
+                                        VerticalAlignment="Center">
+                                <Button Command="{Binding RefreshCommand}"
+                                        Content="Refresh"
+                                        automation:AutomationProperties.Name="Refresh diagnostics data" />
+                                <ToggleButton IsChecked="{Binding ShowMarginPadding, Mode=TwoWay}"
+                                              Command="{Binding ToggleMarginPaddingCommand}"
+                                              Content="Margin/Padding"
+                                              automation:AutomationProperties.Name="Toggle margin and padding overlay" />
+                                <ToggleButton IsChecked="{Binding ShowFocusHighlighter, Mode=TwoWay}"
+                                              Command="{Binding ToggleFocusHighlightCommand}"
+                                              Content="Focus"
+                                              automation:AutomationProperties.Name="Toggle focus overlay" />
+                                <ToggleButton IsChecked="{Binding ShowFps, Mode=TwoWay}"
+                                              Command="{Binding ToggleFpsCommand}"
+                                              Content="FPS"
+                                              automation:AutomationProperties.Name="Toggle frames per second display" />
+                                <ToggleButton IsChecked="{Binding FreezePopups, Mode=TwoWay}"
+                                              Command="{Binding ToggleFreezePopupsCommand}"
+                                              Content="Freeze Popups"
+                                              automation:AutomationProperties.Name="Toggle popup freezing" />
+                                <ToggleButton IsChecked="{Binding ShowClrProperties, Mode=TwoWay}"
+                                              Command="{Binding ToggleClrPropertiesCommand}"
+                                              Content="CLR Properties"
+                                              automation:AutomationProperties.Name="Toggle CLR properties display" />
+                            </StackPanel>
+                        </ScrollViewer>
                     </StackPanel>
 
                     <Button Grid.Column="1"
@@ -116,31 +122,37 @@
                     BorderThickness="0,1,0,0"
                     BorderBrush="{ThemeResource DevToolsBorderBrush}"
                     CornerRadius="{ThemeResource DevToolsChromeFooterCornerRadius}">
-                <StackPanel Orientation="Horizontal"
-                            Spacing="12"
-                            automation:AutomationProperties.Name="Diagnostics status">
-                    <TextBlock Style="{StaticResource DevToolsBodyTextStyle}"
-                               Text="{Binding InspectInstructionText}" />
-                    <TextBlock Style="{StaticResource DevToolsCaptionTextStyle}" Text="Focused:" />
-                    <TextBlock Foreground="{ThemeResource DevToolsForegroundBrush}" Text="{Binding FocusedControl}" />
-                    <TextBlock Style="{StaticResource DevToolsCaptionTextStyle}" Text="Pointer Over:" />
-                    <TextBlock Foreground="{ThemeResource DevToolsForegroundBrush}" Text="{Binding PointerOverElement}" />
-                    <TextBlock Style="{StaticResource DevToolsCaptionTextStyle}" Text="Hover:" />
-                    <TextBlock MaxWidth="360"
-                               Foreground="{ThemeResource DevToolsForegroundBrush}"
-                               Text="{Binding TreeHoverElement}"
-                               TextTrimming="CharacterEllipsis" />
-                    <TextBlock Style="{StaticResource DevToolsCaptionTextStyle}" Text="Inspecting:" />
-                    <TextBlock MaxWidth="520"
-                               Foreground="{ThemeResource DevToolsForegroundBrush}"
-                               Text="{Binding InspectionTarget}"
-                               TextTrimming="CharacterEllipsis" />
-                    <TextBlock Style="{StaticResource DevToolsCaptionTextStyle}" Text="Status:" />
-                    <TextBlock MaxWidth="520"
-                               Foreground="{ThemeResource DevToolsForegroundBrush}"
-                               Text="{Binding StatusText}"
-                               TextTrimming="CharacterEllipsis" />
-                </StackPanel>
+                <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                              HorizontalScrollMode="Enabled"
+                              VerticalScrollBarVisibility="Disabled"
+                              VerticalScrollMode="Disabled"
+                              ZoomMode="Disabled">
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="8"
+                                automation:AutomationProperties.Name="Diagnostics status">
+                        <TextBlock Style="{StaticResource DevToolsBodyTextStyle}"
+                                   Text="{Binding InspectInstructionText}" />
+                        <TextBlock Style="{StaticResource DevToolsCaptionTextStyle}" Text="Focused:" />
+                        <TextBlock Foreground="{ThemeResource DevToolsForegroundBrush}" Text="{Binding FocusedControl}" />
+                        <TextBlock Style="{StaticResource DevToolsCaptionTextStyle}" Text="Pointer Over:" />
+                        <TextBlock Foreground="{ThemeResource DevToolsForegroundBrush}" Text="{Binding PointerOverElement}" />
+                        <TextBlock Style="{StaticResource DevToolsCaptionTextStyle}" Text="Hover:" />
+                        <TextBlock MaxWidth="320"
+                                   Foreground="{ThemeResource DevToolsForegroundBrush}"
+                                   Text="{Binding TreeHoverElement}"
+                                   TextTrimming="CharacterEllipsis" />
+                        <TextBlock Style="{StaticResource DevToolsCaptionTextStyle}" Text="Inspecting:" />
+                        <TextBlock MaxWidth="420"
+                                   Foreground="{ThemeResource DevToolsForegroundBrush}"
+                                   Text="{Binding InspectionTarget}"
+                                   TextTrimming="CharacterEllipsis" />
+                        <TextBlock Style="{StaticResource DevToolsCaptionTextStyle}" Text="Status:" />
+                        <TextBlock MaxWidth="420"
+                                   Foreground="{ThemeResource DevToolsForegroundBrush}"
+                                   Text="{Binding StatusText}"
+                                   TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                </ScrollViewer>
             </Border>
         </Grid>
     </Border>

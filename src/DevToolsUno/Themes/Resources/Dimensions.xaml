@@ -2,14 +2,14 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <CornerRadius x:Key="DevToolsPaneCornerRadius">12</CornerRadius>
-    <CornerRadius x:Key="DevToolsChromeCornerRadius">16</CornerRadius>
-    <CornerRadius x:Key="DevToolsChromeHeaderCornerRadius">16,16,0,0</CornerRadius>
-    <CornerRadius x:Key="DevToolsChromeFooterCornerRadius">0,0,16,16</CornerRadius>
+    <CornerRadius x:Key="DevToolsPaneCornerRadius">10</CornerRadius>
+    <CornerRadius x:Key="DevToolsChromeCornerRadius">14</CornerRadius>
+    <CornerRadius x:Key="DevToolsChromeHeaderCornerRadius">14,14,0,0</CornerRadius>
+    <CornerRadius x:Key="DevToolsChromeFooterCornerRadius">0,0,14,14</CornerRadius>
     <Thickness x:Key="DevToolsPaneBorderThickness">1</Thickness>
-    <Thickness x:Key="DevToolsChromeHeaderPadding">20,16</Thickness>
-    <Thickness x:Key="DevToolsChromeFooterPadding">16,12</Thickness>
-    <Thickness x:Key="DevToolsPagePadding">16</Thickness>
-    <Thickness x:Key="DevToolsPanelPadding">16</Thickness>
-    <Thickness x:Key="DevToolsInspectorSectionPadding">14</Thickness>
+    <Thickness x:Key="DevToolsChromeHeaderPadding">16,12</Thickness>
+    <Thickness x:Key="DevToolsChromeFooterPadding">12,8</Thickness>
+    <Thickness x:Key="DevToolsPagePadding">12</Thickness>
+    <Thickness x:Key="DevToolsPanelPadding">12</Thickness>
+    <Thickness x:Key="DevToolsInspectorSectionPadding">10</Thickness>
 </ResourceDictionary>

@@ -4,23 +4,19 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:automation="using:Microsoft.UI.Xaml.Automation"
     xmlns:controls="using:Avalonia.Controls"
+    xmlns:views="using:DevToolsUno.Diagnostics.Views"
     automation:AutomationProperties.Name="Memory object details">
     <Grid x:Name="LayoutRoot"
           MinHeight="0"
           MinWidth="0"
           Padding="{ThemeResource DevToolsPagePadding}"
-          RowSpacing="12">
+          RowSpacing="10">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Grid ColumnSpacing="8">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
+        <StackPanel Spacing="8">
             <StackPanel Spacing="4">
                 <TextBlock Style="{StaticResource DevToolsPageTitleTextStyle}"
                            Text="{Binding Title}" />
@@ -30,110 +26,102 @@
                            Text="{Binding Summary}"
                            TextWrapping="WrapWholeWords" />
             </StackPanel>
-            <StackPanel Grid.Column="1"
-                        Orientation="Horizontal"
-                        Spacing="8"
-                        VerticalAlignment="Center">
-                <Button x:Name="ToggleDetailsButton"
-                        Content="Hide Details"
-                        automation:AutomationProperties.Name="Show or hide details panel" />
+            <views:WrapPanel HorizontalSpacing="8"
+                             VerticalSpacing="8">
                 <Button Command="{Binding CopySelectedPropertyValueCommand}"
                         Content="Copy Property Value"
                         automation:AutomationProperties.Name="Copy selected memory object property value" />
-            </StackPanel>
-        </Grid>
+            </views:WrapPanel>
+        </StackPanel>
 
-        <TextBox Grid.Row="1"
-                 PlaceholderText="Filter memory object properties"
-                 Text="{Binding Filter.FilterString, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                 automation:AutomationProperties.Name="Filter memory object properties" />
+        <TabView x:Name="InspectorTabs"
+                 Grid.Row="1"
+                 MinHeight="0"
+                 MinWidth="0"
+                 Style="{StaticResource DevToolsEmbeddedTabViewStyle}">
+            <TabViewItem Header="Properties">
+                <Grid MinHeight="0"
+                      MinWidth="0"
+                      Padding="0,8,0,0"
+                      RowSpacing="8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
 
-        <Grid Grid.Row="2"
-              MinHeight="0"
-              MinWidth="0"
-              ColumnSpacing="0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition x:Name="PropertyColumn"
-                                  Width="2*"
-                                  MinWidth="360" />
-                <ColumnDefinition x:Name="DetailsSplitterColumn"
-                                  Width="8" />
-                <ColumnDefinition x:Name="DetailsColumn"
-                                  Width="*"
-                                  MinWidth="260" />
-            </Grid.ColumnDefinitions>
+                    <TextBox PlaceholderText="Filter memory object properties"
+                             Text="{Binding Filter.FilterString, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             automation:AutomationProperties.Name="Filter memory object properties" />
 
-            <Border Margin="0,0,12,0"
-                    MinHeight="0"
-                    MinWidth="0"
-                    Style="{StaticResource DevToolsDataPanelBorderStyle}">
-                <controls:TreeDataGrid x:Name="PropertyGrid"
-                                       HorizontalAlignment="Stretch"
-                                       VerticalAlignment="Stretch"
-                                       Source="{Binding PropertySource}"
-                                       automation:AutomationProperties.Name="Memory object property grid" />
-            </Border>
-
-            <Border x:Name="DetailsSplitter"
-                    Grid.Column="1"
-                    Width="8"
-                    Background="Transparent"
-                    automation:AutomationProperties.Name="Resize properties and details panes" />
-
-            <ScrollViewer x:Name="DetailsPanel"
-                          Grid.Column="2"
-                          Margin="12,0,0,0"
-                          MinHeight="0"
-                          MinWidth="0"
-                          automation:AutomationProperties.Name="Memory object metadata">
-                <StackPanel Spacing="12">
-                    <Border Style="{StaticResource DevToolsInspectorCardBorderStyle}">
-                        <StackPanel Spacing="8">
-                            <TextBlock Style="{StaticResource DevToolsSectionTitleTextStyle}" Text="Selected Property" />
-                            <ContentControl Content="{Binding SelectedProperty}"
-                                            ContentTemplate="{StaticResource SelectedPropertyEditorTemplate}" />
-                        </StackPanel>
+                    <Border Grid.Row="1"
+                            MinHeight="0"
+                            MinWidth="0"
+                            Style="{StaticResource DevToolsDataPanelBorderStyle}">
+                        <controls:TreeDataGrid x:Name="PropertyGrid"
+                                               HorizontalAlignment="Stretch"
+                                               VerticalAlignment="Stretch"
+                                               Source="{Binding PropertySource}"
+                                               automation:AutomationProperties.Name="Memory object property grid" />
                     </Border>
+                </Grid>
+            </TabViewItem>
+            <TabViewItem Header="Overview">
+                <ScrollViewer MinHeight="0"
+                              MinWidth="0"
+                              Padding="0,8,0,0"
+                              automation:AutomationProperties.Name="Memory object metadata">
+                    <StackPanel Spacing="10">
+                        <Border Style="{StaticResource DevToolsInspectorCardBorderStyle}">
+                            <StackPanel Spacing="8">
+                                <TextBlock Style="{StaticResource DevToolsSectionTitleTextStyle}" Text="Selected Property" />
+                                <ContentControl Content="{Binding SelectedProperty}"
+                                                ContentTemplate="{StaticResource SelectedPropertyEditorTemplate}" />
+                            </StackPanel>
+                        </Border>
 
-                    <Border Style="{StaticResource DevToolsInspectorCardBorderStyle}">
-                        <StackPanel Spacing="4">
-                            <TextBlock Style="{StaticResource DevToolsSectionTitleTextStyle}"
-                                       Text="Object" />
-                            <StackPanel Orientation="Horizontal" Spacing="4">
-                                <TextBlock Foreground="{ThemeResource DevToolsForegroundCaptionBrush}" Text="Value:" />
-                                <TextBlock Foreground="{ThemeResource DevToolsForegroundMutedBrush}" Text="{Binding ValueText}" TextWrapping="WrapWholeWords" />
+                        <Border Style="{StaticResource DevToolsInspectorCardBorderStyle}">
+                            <StackPanel Spacing="4">
+                                <TextBlock Style="{StaticResource DevToolsSectionTitleTextStyle}"
+                                           Text="Object" />
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Foreground="{ThemeResource DevToolsForegroundCaptionBrush}" Text="Value:" />
+                                    <TextBlock Foreground="{ThemeResource DevToolsForegroundMutedBrush}" Text="{Binding ValueText}" TextWrapping="WrapWholeWords" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Foreground="{ThemeResource DevToolsForegroundCaptionBrush}" Text="Type:" />
+                                    <TextBlock Foreground="{ThemeResource DevToolsForegroundMutedBrush}" Text="{Binding ValueType}" TextWrapping="WrapWholeWords" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Foreground="{ThemeResource DevToolsForegroundCaptionBrush}" Text="Kind:" />
+                                    <TextBlock Foreground="{ThemeResource DevToolsForegroundMutedBrush}" Text="{Binding Kind}" TextWrapping="WrapWholeWords" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Foreground="{ThemeResource DevToolsForegroundCaptionBrush}" Text="Owner:" />
+                                    <TextBlock Foreground="{ThemeResource DevToolsForegroundMutedBrush}" Text="{Binding Owner}" TextWrapping="WrapWholeWords" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <TextBlock Foreground="{ThemeResource DevToolsForegroundCaptionBrush}" Text="Path:" />
+                                    <TextBlock Foreground="{ThemeResource DevToolsForegroundMutedBrush}" Text="{Binding Path}" TextWrapping="WrapWholeWords" />
+                                </StackPanel>
                             </StackPanel>
-                            <StackPanel Orientation="Horizontal" Spacing="4">
-                                <TextBlock Foreground="{ThemeResource DevToolsForegroundCaptionBrush}" Text="Type:" />
-                                <TextBlock Foreground="{ThemeResource DevToolsForegroundMutedBrush}" Text="{Binding ValueType}" TextWrapping="WrapWholeWords" />
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Spacing="4">
-                                <TextBlock Foreground="{ThemeResource DevToolsForegroundCaptionBrush}" Text="Kind:" />
-                                <TextBlock Foreground="{ThemeResource DevToolsForegroundMutedBrush}" Text="{Binding Kind}" TextWrapping="WrapWholeWords" />
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Spacing="4">
-                                <TextBlock Foreground="{ThemeResource DevToolsForegroundCaptionBrush}" Text="Owner:" />
-                                <TextBlock Foreground="{ThemeResource DevToolsForegroundMutedBrush}" Text="{Binding Owner}" TextWrapping="WrapWholeWords" />
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Spacing="4">
-                                <TextBlock Foreground="{ThemeResource DevToolsForegroundCaptionBrush}" Text="Path:" />
-                                <TextBlock Foreground="{ThemeResource DevToolsForegroundMutedBrush}" Text="{Binding Path}" TextWrapping="WrapWholeWords" />
-                            </StackPanel>
-                        </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabViewItem>
+            <TabViewItem Header="Sources">
+                <Grid MinHeight="0"
+                      MinWidth="0"
+                      Padding="0,8,0,0">
+                    <Border MinHeight="0"
+                            MinWidth="0"
+                            Style="{StaticResource DevToolsDataPanelBorderStyle}">
+                        <controls:TreeDataGrid Source="{Binding ValueSourceGrid}"
+                                               HorizontalAlignment="Stretch"
+                                               VerticalAlignment="Stretch"
+                                               automation:AutomationProperties.Name="Memory object property sources" />
                     </Border>
-
-                    <Border Style="{StaticResource DevToolsInspectorCardBorderStyle}">
-                        <StackPanel Spacing="8">
-                            <TextBlock Style="{StaticResource DevToolsSectionTitleTextStyle}"
-                                       Text="Property Sources" />
-                            <controls:TreeDataGrid Source="{Binding ValueSourceGrid}"
-                                                   HorizontalAlignment="Stretch"
-                                                   VerticalAlignment="Stretch"
-                                                   automation:AutomationProperties.Name="Memory object property sources" />
-                        </StackPanel>
-                    </Border>
-                </StackPanel>
-            </ScrollViewer>
-        </Grid>
+                </Grid>
+            </TabViewItem>
+        </TabView>
     </Grid>
 </UserControl>

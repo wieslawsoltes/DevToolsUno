@@ -12,7 +12,7 @@
         <SolidColorBrush x:Key="LayoutContentBrush" Color="#88B2BD" />
     </UserControl.Resources>
 
-    <StackPanel Spacing="12">
+    <StackPanel Spacing="10">
         <Grid ColumnSpacing="8" RowSpacing="8">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
@@ -107,7 +107,7 @@
         </Grid>
 
         <Border
-            Padding="12"
+            Padding="10"
             Background="{ThemeResource DevToolsSurfaceSubtleBrush}"
             BorderBrush="{ThemeResource DevToolsBorderBrush}"
             BorderThickness="1"
@@ -117,7 +117,7 @@
 
                 <Viewbox StretchDirection="DownOnly">
                     <Border
-                        MinWidth="240"
+                        MinWidth="200"
                         Background="{StaticResource LayoutMarginBrush}"
                         CornerRadius="16"
                         Padding="{Binding MarginVisualizerThickness}">
@@ -169,9 +169,9 @@
                                             </Grid>
 
                                             <Border
-                                                MinWidth="120"
-                                                MinHeight="72"
-                                                Padding="16"
+                                                MinWidth="96"
+                                                MinHeight="64"
+                                                Padding="12"
                                                 Background="{StaticResource LayoutContentBrush}"
                                                 CornerRadius="8">
                                                 <StackPanel

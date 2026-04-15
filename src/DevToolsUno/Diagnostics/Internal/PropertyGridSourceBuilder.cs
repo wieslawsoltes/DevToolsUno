@@ -20,7 +20,7 @@ internal static class PropertyGridSourceBuilder
 
         source.Columns.Add(
             new HierarchicalExpanderColumn<PropertyGridNode>(
-                new TextColumn<PropertyGridNode, string>("Property", x => x.Name, new AGridLength(2, AGridUnitType.Star)),
+                new TextColumn<PropertyGridNode, string>("Property", x => x.Name, new AGridLength(1.7, AGridUnitType.Star)),
                 x => x.Children,
                 x => x.Children.Count > 0,
                 x => x.IsExpanded));
@@ -30,17 +30,13 @@ internal static class PropertyGridSourceBuilder
                 "Value",
                 ValueCellTemplateKey,
                 ValueEditorCellTemplateKey,
-                width: new AGridLength(2, AGridUnitType.Star),
+                width: new AGridLength(2.3, AGridUnitType.Star),
                 options: new TemplateColumnOptions<PropertyGridNode>
                 {
                     BeginEditGestures = BeginEditGestures.Default | BeginEditGestures.WhenSelected,
                     IsTextSearchEnabled = true,
                     TextSearchValueSelector = x => x.ValueText,
                 }));
-
-        source.Columns.Add(new TextColumn<PropertyGridNode, string>("Type", x => x.TypeText, new AGridLength(1, AGridUnitType.Star)));
-        source.Columns.Add(new TextColumn<PropertyGridNode, string>("Priority", x => x.PriorityText, new AGridLength(1, AGridUnitType.Star)));
-        source.Columns.Add(new TextColumn<PropertyGridNode, string>("Source", x => x.SourceText, new AGridLength(1, AGridUnitType.Star)));
 
         return source;
     }

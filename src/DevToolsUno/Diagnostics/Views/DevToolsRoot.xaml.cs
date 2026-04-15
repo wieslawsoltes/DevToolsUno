@@ -31,6 +31,12 @@ public sealed partial class DevToolsRoot : UserControl
             return;
         }
 
+        if (item.Content is EventsPageView eventsPage)
+        {
+            eventsPage.RequestLayoutRecovery();
+            return;
+        }
+
         if (item.Content is ResourcesPageView resourcesPage)
         {
             resourcesPage.RequestLayoutRecovery();
