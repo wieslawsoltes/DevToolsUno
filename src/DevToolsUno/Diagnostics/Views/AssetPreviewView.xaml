@@ -8,7 +8,7 @@
           MinHeight="0"
           MinWidth="0"
           Padding="{ThemeResource DevToolsPagePadding}"
-          RowSpacing="12">
+          RowSpacing="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />

@@ -11,7 +11,7 @@ public sealed partial class BindingsPageView : UserControl
     public BindingsPageView()
     {
         InitializeComponent();
-        _layoutRefresh = new DeferredLayoutRefresh(this, 6, BindingsGrid, DetailList, DetailsView);
+        _layoutRefresh = new DeferredLayoutRefresh(this, 6, BindingsGrid, ContentTabs);
         _bindingSelectionBringIntoView = new TreeDataGridSelectionBringIntoViewController(
             this,
             BindingsGrid,

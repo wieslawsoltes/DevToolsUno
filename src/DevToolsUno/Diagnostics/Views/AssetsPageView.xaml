@@ -13,16 +13,16 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition x:Name="FolderColumn"
                               Width="1.1*"
-                              MinWidth="280" />
+                              MinWidth="240" />
             <ColumnDefinition Width="8" />
             <ColumnDefinition x:Name="ContentColumn"
                               Width="1.9*"
-                              MinWidth="520" />
+                              MinWidth="420" />
         </Grid.ColumnDefinitions>
 
         <Grid MinHeight="0"
               MinWidth="0"
-              Margin="0,0,12,0"
+              Margin="0,0,8,0"
               RowSpacing="8">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -37,8 +37,8 @@
                                Text="{Binding StatusText}"
                                TextWrapping="WrapWholeWords" />
                 </StackPanel>
-                <StackPanel Orientation="Horizontal"
-                            Spacing="8">
+                <views:WrapPanel HorizontalSpacing="8"
+                                 VerticalSpacing="8">
                     <Button Command="{Binding RefreshCommand}"
                             Content="Refresh"
                             automation:AutomationProperties.Name="Refresh assets" />
@@ -48,7 +48,7 @@
                     <Button Command="{Binding CollapseAllCommand}"
                             Content="Collapse"
                             automation:AutomationProperties.Name="Collapse all asset folders" />
-                </StackPanel>
+                </views:WrapPanel>
             </StackPanel>
 
             <Border Grid.Row="1"
@@ -70,27 +70,17 @@
                 automation:AutomationProperties.Name="Resize folders and assets panes" />
 
         <Grid Grid.Column="2"
-              Margin="12,0,0,0"
+              Margin="8,0,0,0"
               MinHeight="0"
               MinWidth="0"
               RowSpacing="8">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
-                <RowDefinition x:Name="AssetsRow"
-                               Height="*"
-                               MinHeight="220" />
-                <RowDefinition Height="8" />
-                <RowDefinition x:Name="PreviewRow"
-                               Height="*"
-                               MinHeight="180" />
+                <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <Grid ColumnSpacing="8">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
+            <StackPanel Spacing="8">
                 <StackPanel Spacing="4">
                     <TextBlock Style="{StaticResource DevToolsPageTitleTextStyle}"
                                Text="{Binding SelectedFolderName}" />
@@ -98,10 +88,8 @@
                                Text="{Binding SelectedFolderSummary}"
                                TextWrapping="WrapWholeWords" />
                 </StackPanel>
-                <StackPanel Grid.Column="1"
-                            Orientation="Horizontal"
-                            Spacing="8"
-                            VerticalAlignment="Center">
+                <views:WrapPanel HorizontalSpacing="8"
+                                 VerticalSpacing="8">
                     <Button Command="{Binding CopySelectedUriCommand}"
                             Content="Copy Uri"
                             automation:AutomationProperties.Name="Copy selected asset uri" />
@@ -111,8 +99,8 @@
                     <Button Command="{Binding ExportSelectedCommand}"
                             Content="Export"
                             automation:AutomationProperties.Name="Export selected asset" />
-                </StackPanel>
-            </Grid>
+                </views:WrapPanel>
+            </StackPanel>
 
             <Grid Grid.Row="1"
                   ColumnSpacing="8">
@@ -140,45 +128,48 @@
                               automation:AutomationProperties.Name="Toggle descending asset sort" />
             </Grid>
 
-            <Grid Grid.Row="2"
-                  MinHeight="0"
-                  MinWidth="0"
-                  RowSpacing="8">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
+            <TabView x:Name="ContentTabs"
+                     Grid.Row="2"
+                     MinHeight="0"
+                     MinWidth="0"
+                     Style="{StaticResource DevToolsEmbeddedTabViewStyle}">
+                <TabViewItem Header="Assets">
+                    <Grid MinHeight="0"
+                          MinWidth="0"
+                          Padding="0,8,0,0"
+                          RowSpacing="8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
 
-                <TextBlock Foreground="{ThemeResource DevToolsForegroundCaptionBrush}"
-                           Text="{Binding AssetCountText}" />
+                        <TextBlock Foreground="{ThemeResource DevToolsForegroundCaptionBrush}"
+                                   Text="{Binding AssetCountText}" />
 
-                <Border Grid.Row="1"
-                        MinHeight="0"
-                        MinWidth="0"
-                        Style="{StaticResource DevToolsDataPanelBorderStyle}">
-                    <controls:TreeDataGrid x:Name="AssetsGrid"
-                                           HorizontalAlignment="Stretch"
-                                           VerticalAlignment="Stretch"
-                                           Source="{Binding AssetSource}"
-                                           automation:AutomationProperties.Name="Assets grid" />
-                </Border>
-            </Grid>
-
-            <Border x:Name="PreviewSplitter"
-                    Grid.Row="3"
-                    Height="8"
-                    Background="Transparent"
-                    automation:AutomationProperties.Name="Resize assets grid and preview panes" />
-
-            <Border Grid.Row="4"
-                    MinHeight="0"
-                    MinWidth="0"
-                    Style="{StaticResource DevToolsDataPanelBorderStyle}">
-                <views:AssetPreviewView x:Name="PreviewView"
-                                        HorizontalAlignment="Stretch"
-                                        VerticalAlignment="Stretch"
-                                        DataContext="{Binding Preview}" />
-            </Border>
+                        <Border Grid.Row="1"
+                                MinHeight="0"
+                                MinWidth="0"
+                                Style="{StaticResource DevToolsDataPanelBorderStyle}">
+                            <controls:TreeDataGrid x:Name="AssetsGrid"
+                                                   HorizontalAlignment="Stretch"
+                                                   VerticalAlignment="Stretch"
+                                                   Source="{Binding AssetSource}"
+                                                   automation:AutomationProperties.Name="Assets grid" />
+                        </Border>
+                    </Grid>
+                </TabViewItem>
+                <TabViewItem Header="Preview">
+                    <Border MinHeight="0"
+                            MinWidth="0"
+                            Padding="0,8,0,0"
+                            Background="Transparent">
+                        <views:AssetPreviewView x:Name="PreviewView"
+                                                HorizontalAlignment="Stretch"
+                                                VerticalAlignment="Stretch"
+                                                DataContext="{Binding Preview}" />
+                    </Border>
+                </TabViewItem>
+            </TabView>
         </Grid>
     </Grid>
 </UserControl>

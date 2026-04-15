@@ -12,7 +12,7 @@ public sealed partial class MemoryPageView : UserControl
     public MemoryPageView()
     {
         InitializeComponent();
-        _layoutRefresh = new DeferredLayoutRefresh(this, 6, SamplesGrid, DetailList, TrackedGrid, DetailsView);
+        _layoutRefresh = new DeferredLayoutRefresh(this, 6, SamplesGrid, ContentTabs);
         _sampleSelectionBringIntoView = new TreeDataGridSelectionBringIntoViewController(
             this,
             SamplesGrid,

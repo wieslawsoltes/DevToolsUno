@@ -9,7 +9,7 @@
     <Grid x:Name="LayoutRoot"
           MinHeight="0"
           MinWidth="0"
-          ColumnSpacing="12">
+          ColumnSpacing="8">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1.15*" />
             <ColumnDefinition Width="1.85*" />
@@ -36,8 +36,8 @@
                                Text="{Binding StatusText}"
                                TextWrapping="WrapWholeWords" />
                 </StackPanel>
-                <StackPanel Orientation="Horizontal"
-                            Spacing="8">
+                <views:WrapPanel HorizontalSpacing="8"
+                                 VerticalSpacing="8">
                     <Button Command="{Binding RefreshCommand}"
                             Content="Refresh"
                             automation:AutomationProperties.Name="Refresh memory diagnostics" />
@@ -50,7 +50,7 @@
                     <Button Command="{Binding ResetHistoryCommand}"
                             Content="Reset History"
                             automation:AutomationProperties.Name="Reset memory sample history" />
-                </StackPanel>
+                </views:WrapPanel>
             </StackPanel>
 
             <Border Grid.Row="1"
@@ -140,9 +140,6 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
             <StackPanel Spacing="4">
@@ -156,92 +153,107 @@
                            TextWrapping="WrapWholeWords" />
             </StackPanel>
 
-            <Border Grid.Row="1"
-                    MinHeight="0"
-                    MinWidth="0"
-                    Style="{StaticResource DevToolsDataPanelBorderStyle}">
-                <ListView x:Name="DetailList"
-                          ItemsSource="{Binding DetailItems}"
-                          SelectedItem="{Binding SelectedDetailItem, Mode=TwoWay}"
-                          Style="{StaticResource DevToolsFlatListViewStyle}"
-                          automation:AutomationProperties.Name="Memory snapshot objects">
-                    <ListView.ItemTemplate>
-                        <DataTemplate>
-                            <Grid Margin="0,0,0,8" ColumnSpacing="12">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="140" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock FontWeight="SemiBold"
-                                           Foreground="{ThemeResource DevToolsForegroundBrush}"
-                                           Text="{Binding Name}" />
-                                <StackPanel Grid.Column="1"
-                                            Spacing="2">
-                                    <TextBlock Foreground="{ThemeResource DevToolsForegroundMutedBrush}"
-                                               Text="{Binding Value}"
-                                               TextWrapping="WrapWholeWords" />
-                                    <TextBlock FontSize="12"
-                                               Foreground="{ThemeResource DevToolsForegroundSubtleBrush}"
-                                               Text="{Binding Detail}"
-                                               TextWrapping="WrapWholeWords" />
-                                </StackPanel>
-                            </Grid>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
-            </Border>
+            <TabView x:Name="ContentTabs"
+                     Grid.Row="1"
+                     MinHeight="0"
+                     MinWidth="0"
+                     Style="{StaticResource DevToolsEmbeddedTabViewStyle}">
+                <TabViewItem Header="Snapshot">
+                    <Grid MinHeight="0"
+                          MinWidth="0"
+                          Padding="0,8,0,0">
+                        <Border MinHeight="0"
+                                MinWidth="0"
+                                Style="{StaticResource DevToolsDataPanelBorderStyle}">
+                            <ListView x:Name="DetailList"
+                                      ItemsSource="{Binding DetailItems}"
+                                      SelectedItem="{Binding SelectedDetailItem, Mode=TwoWay}"
+                                      Style="{StaticResource DevToolsFlatListViewStyle}"
+                                      automation:AutomationProperties.Name="Memory snapshot objects">
+                                <ListView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,0,0,8" ColumnSpacing="12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="140" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock FontWeight="SemiBold"
+                                                       Foreground="{ThemeResource DevToolsForegroundBrush}"
+                                                       Text="{Binding Name}" />
+                                            <StackPanel Grid.Column="1"
+                                                        Spacing="2">
+                                                <TextBlock Foreground="{ThemeResource DevToolsForegroundMutedBrush}"
+                                                           Text="{Binding Value}"
+                                                           TextWrapping="WrapWholeWords" />
+                                                <TextBlock FontSize="12"
+                                                           Foreground="{ThemeResource DevToolsForegroundSubtleBrush}"
+                                                           Text="{Binding Detail}"
+                                                           TextWrapping="WrapWholeWords" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                        </Border>
+                    </Grid>
+                </TabViewItem>
+                <TabViewItem Header="Tracked Objects">
+                    <Grid MinHeight="0"
+                          MinWidth="0"
+                          Padding="0,8,0,0"
+                          RowSpacing="8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
 
-            <Grid Grid.Row="2"
-                  ColumnSpacing="8">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel Spacing="4">
-                    <TextBlock Style="{StaticResource DevToolsPageTitleTextStyle}"
-                               Text="Tracked Objects" />
-                    <TextBlock Style="{StaticResource DevToolsBodyTextStyle}"
-                               Text="{Binding TrackedSelectionSummary}"
-                               TextWrapping="WrapWholeWords" />
-                    <TextBlock Foreground="{ThemeResource DevToolsForegroundCaptionBrush}"
-                               Text="{Binding TrackedCountText}" />
-                </StackPanel>
-                <StackPanel Grid.Column="1"
-                            Orientation="Horizontal"
-                            Spacing="8"
-                            VerticalAlignment="Center">
-                    <Button Command="{Binding TrackSelectionCommand}"
-                            Content="Track Selection"
-                            automation:AutomationProperties.Name="Track selected control for memory diagnostics" />
-                    <Button Command="{Binding RemoveCollectedCommand}"
-                            Content="Remove Collected"
-                            automation:AutomationProperties.Name="Remove collected tracked objects" />
-                    <Button Command="{Binding ClearTrackedCommand}"
-                            Content="Clear"
-                            automation:AutomationProperties.Name="Clear tracked objects" />
-                </StackPanel>
-            </Grid>
+                        <StackPanel Spacing="8">
+                            <StackPanel Spacing="4">
+                                <TextBlock Style="{StaticResource DevToolsPageTitleTextStyle}"
+                                           Text="Tracked Objects" />
+                                <TextBlock Style="{StaticResource DevToolsBodyTextStyle}"
+                                           Text="{Binding TrackedSelectionSummary}"
+                                           TextWrapping="WrapWholeWords" />
+                                <TextBlock Foreground="{ThemeResource DevToolsForegroundCaptionBrush}"
+                                           Text="{Binding TrackedCountText}" />
+                            </StackPanel>
+                            <views:WrapPanel HorizontalSpacing="8"
+                                             VerticalSpacing="8">
+                                <Button Command="{Binding TrackSelectionCommand}"
+                                        Content="Track Selection"
+                                        automation:AutomationProperties.Name="Track selected control for memory diagnostics" />
+                                <Button Command="{Binding RemoveCollectedCommand}"
+                                        Content="Remove Collected"
+                                        automation:AutomationProperties.Name="Remove collected tracked objects" />
+                                <Button Command="{Binding ClearTrackedCommand}"
+                                        Content="Clear"
+                                        automation:AutomationProperties.Name="Clear tracked objects" />
+                            </views:WrapPanel>
+                        </StackPanel>
 
-            <Border Grid.Row="3"
-                    MinHeight="0"
-                    MinWidth="0"
-                    Style="{StaticResource DevToolsDataPanelBorderStyle}">
-                <controls:TreeDataGrid x:Name="TrackedGrid"
-                                       HorizontalAlignment="Stretch"
-                                       VerticalAlignment="Stretch"
-                                       Source="{Binding TrackedSource}"
-                                       automation:AutomationProperties.Name="Tracked objects grid" />
-            </Border>
-
-            <Border Grid.Row="4"
-                    MinHeight="0"
-                    MinWidth="0"
-                    Style="{StaticResource DevToolsDataPanelBorderStyle}">
-                <views:MemoryObjectDetailsView x:Name="DetailsView"
-                                               HorizontalAlignment="Stretch"
-                                               VerticalAlignment="Stretch"
-                                               DataContext="{Binding Details}" />
-            </Border>
+                        <Border Grid.Row="1"
+                                MinHeight="0"
+                                MinWidth="0"
+                                Style="{StaticResource DevToolsDataPanelBorderStyle}">
+                            <controls:TreeDataGrid x:Name="TrackedGrid"
+                                                   HorizontalAlignment="Stretch"
+                                                   VerticalAlignment="Stretch"
+                                                   Source="{Binding TrackedSource}"
+                                                   automation:AutomationProperties.Name="Tracked objects grid" />
+                        </Border>
+                    </Grid>
+                </TabViewItem>
+                <TabViewItem Header="Inspector">
+                    <Grid MinHeight="0"
+                          MinWidth="0"
+                          Padding="0,8,0,0">
+                        <views:MemoryObjectDetailsView x:Name="DetailsView"
+                                                       HorizontalAlignment="Stretch"
+                                                       VerticalAlignment="Stretch"
+                                                       DataContext="{Binding Details}" />
+                    </Grid>
+                </TabViewItem>
+            </TabView>
         </Grid>
     </Grid>
 </UserControl>

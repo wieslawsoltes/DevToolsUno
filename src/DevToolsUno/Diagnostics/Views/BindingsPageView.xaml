@@ -9,7 +9,7 @@
     <Grid x:Name="LayoutRoot"
           MinHeight="0"
           MinWidth="0"
-          ColumnSpacing="12">
+          ColumnSpacing="8">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1.15*" />
             <ColumnDefinition Width="1.85*" />
@@ -33,12 +33,12 @@
                                Text="{Binding InspectionTargetSummary}"
                                TextWrapping="WrapWholeWords" />
                 </StackPanel>
-                <StackPanel Orientation="Horizontal"
-                            Spacing="8">
+                <views:WrapPanel HorizontalSpacing="8"
+                                 VerticalSpacing="8">
                     <Button Command="{Binding RefreshCommand}"
                             Content="Refresh"
                             automation:AutomationProperties.Name="Refresh bindings" />
-                </StackPanel>
+                </views:WrapPanel>
             </StackPanel>
 
             <Grid Grid.Row="1"
@@ -85,14 +85,9 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
-                <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <Grid ColumnSpacing="8">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
+            <StackPanel Spacing="8">
                 <StackPanel Spacing="4">
                     <TextBlock Style="{StaticResource DevToolsPageTitleTextStyle}"
                                Text="{Binding SelectedBindingName}" />
@@ -103,63 +98,72 @@
                                Text="{Binding SelectedBindingPath}"
                                TextWrapping="WrapWholeWords" />
                 </StackPanel>
-                <StackPanel Grid.Column="1"
-                            Orientation="Horizontal"
-                            Spacing="8"
-                            VerticalAlignment="Center">
+                <views:WrapPanel HorizontalSpacing="8"
+                                 VerticalSpacing="8">
                     <Button Command="{Binding CopySelectedPathCommand}"
                             Content="Copy Path"
                             automation:AutomationProperties.Name="Copy selected binding path" />
                     <Button Command="{Binding CopySelectedValueCommand}"
                             Content="Copy Value"
                             automation:AutomationProperties.Name="Copy selected binding value" />
-                </StackPanel>
-            </Grid>
+                </views:WrapPanel>
+            </StackPanel>
 
-            <Border Grid.Row="1"
-                    MinHeight="0"
-                    MinWidth="0"
-                    Style="{StaticResource DevToolsDataPanelBorderStyle}">
-                <ListView x:Name="DetailList"
-                          ItemsSource="{Binding DetailItems}"
-                          SelectedItem="{Binding SelectedDetailItem, Mode=TwoWay}"
-                          Style="{StaticResource DevToolsFlatListViewStyle}"
-                          automation:AutomationProperties.Name="Binding facts">
-                    <ListView.ItemTemplate>
-                        <DataTemplate>
-                            <Grid Margin="0,0,0,8" ColumnSpacing="12">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="140" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock FontWeight="SemiBold"
-                                           Foreground="{ThemeResource DevToolsForegroundBrush}"
-                                           Text="{Binding Name}" />
-                                <StackPanel Grid.Column="1"
-                                            Spacing="2">
-                                    <TextBlock Foreground="{ThemeResource DevToolsForegroundMutedBrush}"
-                                               Text="{Binding Value}"
-                                               TextWrapping="WrapWholeWords" />
-                                    <TextBlock FontSize="12"
-                                               Foreground="{ThemeResource DevToolsForegroundSubtleBrush}"
-                                               Text="{Binding Detail}"
-                                               TextWrapping="WrapWholeWords" />
-                                </StackPanel>
-                            </Grid>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
-            </Border>
-
-            <Border Grid.Row="2"
-                    MinHeight="0"
-                    MinWidth="0"
-                    Style="{StaticResource DevToolsDataPanelBorderStyle}">
-                <views:BindingObjectDetailsView x:Name="DetailsView"
-                                                HorizontalAlignment="Stretch"
-                                                VerticalAlignment="Stretch"
-                                                DataContext="{Binding Details}" />
-            </Border>
+            <TabView x:Name="ContentTabs"
+                     Grid.Row="1"
+                     MinHeight="0"
+                     MinWidth="0"
+                     Style="{StaticResource DevToolsEmbeddedTabViewStyle}">
+                <TabViewItem Header="Facts">
+                    <Grid MinHeight="0"
+                          MinWidth="0"
+                          Padding="0,8,0,0">
+                        <Border MinHeight="0"
+                                MinWidth="0"
+                                Style="{StaticResource DevToolsDataPanelBorderStyle}">
+                            <ListView x:Name="DetailList"
+                                      ItemsSource="{Binding DetailItems}"
+                                      SelectedItem="{Binding SelectedDetailItem, Mode=TwoWay}"
+                                      Style="{StaticResource DevToolsFlatListViewStyle}"
+                                      automation:AutomationProperties.Name="Binding facts">
+                                <ListView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,0,0,8" ColumnSpacing="12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="140" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock FontWeight="SemiBold"
+                                                       Foreground="{ThemeResource DevToolsForegroundBrush}"
+                                                       Text="{Binding Name}" />
+                                            <StackPanel Grid.Column="1"
+                                                        Spacing="2">
+                                                <TextBlock Foreground="{ThemeResource DevToolsForegroundMutedBrush}"
+                                                           Text="{Binding Value}"
+                                                           TextWrapping="WrapWholeWords" />
+                                                <TextBlock FontSize="12"
+                                                           Foreground="{ThemeResource DevToolsForegroundSubtleBrush}"
+                                                           Text="{Binding Detail}"
+                                                           TextWrapping="WrapWholeWords" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                        </Border>
+                    </Grid>
+                </TabViewItem>
+                <TabViewItem Header="Object Inspector">
+                    <Grid MinHeight="0"
+                          MinWidth="0"
+                          Padding="0,8,0,0">
+                        <views:BindingObjectDetailsView x:Name="DetailsView"
+                                                        HorizontalAlignment="Stretch"
+                                                        VerticalAlignment="Stretch"
+                                                        DataContext="{Binding Details}" />
+                    </Grid>
+                </TabViewItem>
+            </TabView>
         </Grid>
     </Grid>
 </UserControl>

@@ -13,16 +13,16 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition x:Name="ProviderColumn"
                               Width="1.2*"
-                              MinWidth="280" />
+                              MinWidth="240" />
             <ColumnDefinition Width="8" />
             <ColumnDefinition x:Name="ContentColumn"
                               Width="1.8*"
-                              MinWidth="520" />
+                              MinWidth="420" />
         </Grid.ColumnDefinitions>
 
         <Grid MinHeight="0"
               MinWidth="0"
-              Margin="0,0,12,0"
+              Margin="0,0,8,0"
               RowSpacing="8">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -37,8 +37,8 @@
                                Text="{Binding InspectionTargetSummary}"
                                TextWrapping="WrapWholeWords" />
                 </StackPanel>
-                <StackPanel Orientation="Horizontal"
-                            Spacing="8">
+                <views:WrapPanel HorizontalSpacing="8"
+                                 VerticalSpacing="8">
                     <Button Command="{Binding RefreshCommand}"
                             Content="Refresh"
                             automation:AutomationProperties.Name="Refresh resources" />
@@ -48,7 +48,7 @@
                     <Button Command="{Binding CollapseAllCommand}"
                             Content="Collapse"
                             automation:AutomationProperties.Name="Collapse all providers" />
-                </StackPanel>
+                </views:WrapPanel>
             </StackPanel>
 
             <Border Grid.Row="1"
@@ -70,7 +70,7 @@
                 automation:AutomationProperties.Name="Resize providers and resources panes" />
 
         <Grid Grid.Column="2"
-              Margin="12,0,0,0"
+              Margin="8,0,0,0"
               MinHeight="0"
               MinWidth="0"
               RowSpacing="8">
@@ -78,14 +78,9 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
-                <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <Grid ColumnSpacing="8">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
+            <StackPanel Spacing="8">
                 <StackPanel Spacing="4">
                     <TextBlock Style="{StaticResource DevToolsPageTitleTextStyle}"
                                Text="{Binding SelectedProviderName}" />
@@ -96,18 +91,16 @@
                                Text="{Binding SelectedProviderPath}"
                                TextWrapping="WrapWholeWords" />
                 </StackPanel>
-                <StackPanel Grid.Column="1"
-                            Orientation="Horizontal"
-                            Spacing="8"
-                            VerticalAlignment="Center">
+                <views:WrapPanel HorizontalSpacing="8"
+                                 VerticalSpacing="8">
                     <Button Command="{Binding CopySelectedKeyCommand}"
                             Content="Copy Key"
                             automation:AutomationProperties.Name="Copy selected resource key" />
                     <Button Command="{Binding CopySelectedValueCommand}"
                             Content="Copy Value"
                             automation:AutomationProperties.Name="Copy selected resource value" />
-                </StackPanel>
-            </Grid>
+                </views:WrapPanel>
+            </StackPanel>
 
             <Grid Grid.Row="1"
                   ColumnSpacing="8">
@@ -135,39 +128,48 @@
                               automation:AutomationProperties.Name="Toggle descending resource sort" />
             </Grid>
 
-            <Grid Grid.Row="2"
-                  MinHeight="0"
-                  MinWidth="0"
-                  RowSpacing="8">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
+            <TabView x:Name="ContentTabs"
+                     Grid.Row="2"
+                     MinHeight="0"
+                     MinWidth="0"
+                     Style="{StaticResource DevToolsEmbeddedTabViewStyle}">
+                <TabViewItem Header="Resources">
+                    <Grid MinHeight="0"
+                          MinWidth="0"
+                          Padding="0,8,0,0"
+                          RowSpacing="8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
 
-                <TextBlock Foreground="{ThemeResource DevToolsForegroundCaptionBrush}"
-                           Text="{Binding ResourceCountText}" />
+                        <TextBlock Foreground="{ThemeResource DevToolsForegroundCaptionBrush}"
+                                   Text="{Binding ResourceCountText}" />
 
-                <Border Grid.Row="1"
-                        MinHeight="0"
-                        MinWidth="0"
-                        Style="{StaticResource DevToolsDataPanelBorderStyle}">
-                    <controls:TreeDataGrid x:Name="ResourcesGrid"
-                                           HorizontalAlignment="Stretch"
-                                           VerticalAlignment="Stretch"
-                                           Source="{Binding ResourceSource}"
-                                           automation:AutomationProperties.Name="Resources grid" />
-                </Border>
-            </Grid>
-
-            <Border Grid.Row="3"
-                    MinHeight="0"
-                    MinWidth="0"
-                    Style="{StaticResource DevToolsDataPanelBorderStyle}">
-                <views:ResourceValueDetailsView x:Name="DetailsView"
-                                                HorizontalAlignment="Stretch"
-                                                VerticalAlignment="Stretch"
-                                                DataContext="{Binding Details}" />
-            </Border>
+                        <Border Grid.Row="1"
+                                MinHeight="0"
+                                MinWidth="0"
+                                Style="{StaticResource DevToolsDataPanelBorderStyle}">
+                            <controls:TreeDataGrid x:Name="ResourcesGrid"
+                                                   HorizontalAlignment="Stretch"
+                                                   VerticalAlignment="Stretch"
+                                                   Source="{Binding ResourceSource}"
+                                                   automation:AutomationProperties.Name="Resources grid" />
+                        </Border>
+                    </Grid>
+                </TabViewItem>
+                <TabViewItem Header="Inspector">
+                    <Border MinHeight="0"
+                            MinWidth="0"
+                            Padding="0,8,0,0"
+                            Background="Transparent">
+                        <views:ResourceValueDetailsView x:Name="DetailsView"
+                                                        HorizontalAlignment="Stretch"
+                                                        VerticalAlignment="Stretch"
+                                                        DataContext="{Binding Details}" />
+                    </Border>
+                </TabViewItem>
+            </TabView>
         </Grid>
     </Grid>
 </UserControl>

@@ -20,20 +20,17 @@ public sealed partial class EventsPageView : UserControl
     private readonly object _routeHoverOwner = new();
     private bool _hoverHandlersAttached;
     private bool _isPaneResizing;
-    private bool _isRouteResizing;
     private double _lastPaneX;
-    private double _lastRouteY;
 
     public EventsPageView()
     {
         InitializeComponent();
-        _layoutRefresh = new DeferredLayoutRefresh(this, 6, ListenersGrid, EventLogGrid, RoutesGrid);
+        _layoutRefresh = new DeferredLayoutRefresh(this, 6, ListenersGrid, ResultsTabs);
         _eventLogPointerMovedHandler = OnEventLogPointerMoved;
         _eventLogPointerExitedHandler = OnEventLogPointerExited;
         _routePointerMovedHandler = OnRoutePointerMoved;
         _routePointerExitedHandler = OnRoutePointerExited;
         SplitterChrome.ApplyHorizontal(PaneSplitter);
-        SplitterChrome.ApplyVertical(RouteSplitter);
         Loaded += OnLoaded;
         Unloaded += OnUnloaded;
     }
@@ -76,44 +73,6 @@ public sealed partial class EventsPageView : UserControl
         EndPaneResize();
     }
 
-    private void OnRouteSplitterPointerPressed(object sender, PointerRoutedEventArgs e)
-    {
-        _isRouteResizing = true;
-        _lastRouteY = e.GetCurrentPoint(ResultsRoot).Position.Y;
-        RouteSplitter.CapturePointer(e.Pointer);
-        e.Handled = true;
-    }
-
-    private void OnRouteSplitterPointerMoved(object sender, PointerRoutedEventArgs e)
-    {
-        if (!_isRouteResizing)
-        {
-            return;
-        }
-
-        var currentY = e.GetCurrentPoint(ResultsRoot).Position.Y;
-        var delta = currentY - _lastRouteY;
-        if (Math.Abs(delta) < double.Epsilon)
-        {
-            return;
-        }
-
-        ResizeRows(delta);
-        _lastRouteY = currentY;
-        e.Handled = true;
-    }
-
-    private void OnRouteSplitterPointerReleased(object sender, PointerRoutedEventArgs e)
-    {
-        EndRouteResize();
-        e.Handled = true;
-    }
-
-    private void OnRouteSplitterPointerCaptureLost(object sender, PointerRoutedEventArgs e)
-    {
-        EndRouteResize();
-    }
-
     private void ResizeColumns(double delta)
     {
         var availableWidth = LayoutRoot.ActualWidth - PaneSplitter.Width;
@@ -134,37 +93,10 @@ public sealed partial class EventsPageView : UserControl
         _layoutRefresh.Request();
     }
 
-    private void ResizeRows(double delta)
-    {
-        var availableHeight = ResultsRoot.ActualHeight - RouteSplitter.Height;
-        if (availableHeight <= 0)
-        {
-            return;
-        }
-
-        const double logMinHeight = 220;
-        const double routeMinHeight = 180;
-
-        var newLogHeight = Math.Max(logMinHeight, LogRow.ActualHeight + delta);
-        var maxLogHeight = Math.Max(logMinHeight, availableHeight - routeMinHeight);
-        newLogHeight = Math.Min(newLogHeight, maxLogHeight);
-        var newRouteHeight = Math.Max(routeMinHeight, availableHeight - newLogHeight);
-
-        LogRow.Height = new GridLength(newLogHeight);
-        RouteRow.Height = new GridLength(newRouteHeight);
-        _layoutRefresh.Request();
-    }
-
     private void EndPaneResize()
     {
         _isPaneResizing = false;
         PaneSplitter.ReleasePointerCaptures();
-    }
-
-    private void EndRouteResize()
-    {
-        _isRouteResizing = false;
-        RouteSplitter.ReleasePointerCaptures();
     }
 
     private void OnEventLogPointerMoved(object sender, PointerRoutedEventArgs e)
@@ -230,6 +162,9 @@ public sealed partial class EventsPageView : UserControl
             viewModel.ClearHoveredOverlay(_routeHoverOwner);
         }
     }
+
+    internal void RequestLayoutRecovery()
+        => _layoutRefresh.Request();
 
     private static TModel? ResolveHoveredModel<TModel>(DependencyObject? source)
         where TModel : class
