@@ -1,6 +1,6 @@
 using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Controls.Models.TreeDataGrid;
+using Uno.Controls;
+using Uno.Controls.Models.TreeDataGrid;
 using DevToolsUno.Diagnostics.ViewModels;
 using AGridLength = Avalonia.GridLength;
 using AGridUnitType = Avalonia.GridUnitType;

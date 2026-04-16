@@ -1,9 +1,9 @@
 using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Controls.Models.TreeDataGrid;
-using Avalonia.Controls.Selection;
+using Uno.Controls;
+using Uno.Controls.Models.TreeDataGrid;
+using Uno.Controls.Selection;
 using DevToolsUno.Diagnostics.ViewModels;
-using IndexPath = Avalonia.Controls.IndexPath;
+using IndexPath = Uno.Controls.IndexPath;
 using AGridLength = Avalonia.GridLength;
 using AGridUnitType = Avalonia.GridUnitType;
 

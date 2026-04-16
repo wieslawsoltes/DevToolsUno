@@ -1,6 +1,6 @@
 using System;
-using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
+using Uno.Controls;
+using Uno.Controls.Primitives;
 using DevToolsUno.Diagnostics.Internal;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;

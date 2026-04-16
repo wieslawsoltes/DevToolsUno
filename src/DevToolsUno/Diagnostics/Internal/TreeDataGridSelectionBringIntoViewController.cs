@@ -1,5 +1,5 @@
-using Avalonia.Controls;
-using Avalonia.Controls.Selection;
+using Uno.Controls;
+using Uno.Controls.Selection;
 using Microsoft.UI.Xaml;
 
 namespace DevToolsUno.Diagnostics.Internal;
